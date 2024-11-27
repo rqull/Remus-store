@@ -11,6 +11,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AuthController _authController = AuthController();
+  bool _isLoading = false;
   late String email;
   late String fullName;
   late String password;
@@ -18,6 +19,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   registerUser() async {
     BuildContext locaContext = context;
+    setState(() {
+      _isLoading = true;
+    });
     String res =
         await _authController.registerNewUser(fullName, email, password);
 
@@ -31,7 +35,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(locaContext).showSnackBar(SnackBar(
             content: Text("Congratulation account have been create for you")));
       });
-    } else {}
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      Future.delayed(Duration.zero, () {
+        ScaffoldMessenger.of(locaContext)
+            .showSnackBar(SnackBar(content: Text(res)));
+      });
+    }
   }
 
   @override
@@ -328,15 +340,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           Center(
-                            child: Text(
-                              "Sign Up",
-                              style: GoogleFonts.lato(
-                                textStyle: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
-                              ),
-                            ),
+                            child: _isLoading
+                                ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : Text(
+                                    "Sign Up",
+                                    style: GoogleFonts.lato(
+                                      textStyle: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                  ),
                           )
                         ],
                       ),

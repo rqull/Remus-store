@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mob3_uas_klp_04/views/screens/authentification_screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_screen.dart';
+import 'package:mob3_uas_klp_04/views/screens/main_screen.dart';
 import 'firebase_options.dart';
 
 // ...
@@ -21,7 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      home: RegisterScreen(),
     );
   }
 }

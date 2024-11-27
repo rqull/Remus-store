@@ -12,12 +12,16 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AuthController _authController = AuthController();
+  bool _isLoading = false;
   bool _isPasswordVisibility = false;
 
   late String email;
   late String password;
 
   loginUser() async {
+    setState(() {
+      _isLoading = true;
+    });
     String res = await _authController.loginUser(email, password);
 
     if (res == 'success') {
@@ -33,7 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
             .showSnackBar(SnackBar(content: Text('Logged in')));
       });
     } else {
-      print(res);
+      setState(() {
+        _isLoading = false;
+      });
+      Future.delayed(Duration.zero, () {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(res)));
+      });
     }
   }
 
@@ -279,15 +289,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           Center(
-                            child: Text(
-                              "Sign In",
-                              style: GoogleFonts.lato(
-                                textStyle: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
-                              ),
-                            ),
+                            child: _isLoading
+                                ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : Text(
+                                    "Sign In",
+                                    style: GoogleFonts.lato(
+                                      textStyle: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                  ),
                           )
                         ],
                       ),
