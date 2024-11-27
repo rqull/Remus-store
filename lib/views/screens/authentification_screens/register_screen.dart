@@ -14,6 +14,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late String email;
   late String fullName;
   late String password;
+  bool _isPasswordVisible = false;
 
   registerUser() async {
     BuildContext locaContext = context;
@@ -187,6 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   TextFormField(
+                    obscureText: !_isPasswordVisible,
                     onChanged: (value) {
                       password = value;
                     },
@@ -220,7 +222,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           height: 20,
                         ),
                       ),
-                      suffixIcon: Icon(Icons.visibility),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   SizedBox(

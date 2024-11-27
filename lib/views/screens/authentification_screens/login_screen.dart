@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mob3_uas_klp_04/controllers/auth_controller.dart';
 import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_screen.dart';
+import 'package:mob3_uas_klp_04/views/screens/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AuthController _authController = AuthController();
+  bool _isPasswordVisibility = false;
 
   late String email;
   late String password;
@@ -20,8 +22,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (res == 'success') {
       // go to the main screen
-
-      print("Login");
+      Future.delayed(Duration.zero, () {
+        Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (context) {
+            return MainScreen();
+          },
+        ));
+        //we want to show a massage to the user to tell them they have loged in
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Logged in')));
+      });
     } else {
       print(res);
     }
@@ -130,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   TextFormField(
+                    obscureText: !_isPasswordVisibility,
                     onChanged: (value) {
                       password = value;
                     },
@@ -163,7 +174,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 20,
                         ),
                       ),
-                      suffixIcon: Icon(Icons.visibility),
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisibility = !_isPasswordVisibility;
+                            });
+                          },
+                          icon: _isPasswordVisibility
+                              ? Icon(Icons.visibility)
+                              : Icon(Icons.visibility_off)),
                     ),
                   ),
                   SizedBox(
