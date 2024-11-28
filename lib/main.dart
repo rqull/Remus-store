@@ -6,8 +6,6 @@ import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_
 import 'package:mob3_uas_klp_04/views/screens/main_screen.dart';
 import 'firebase_options.dart';
 
-// ...
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -26,7 +24,7 @@ class MyApp extends StatelessWidget {
         SystemUiOverlayStyle(statusBarColor: Colors.transparent));
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: RegisterScreen(),
+      home: MainScreen(),
     );
   }
 }
