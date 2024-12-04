@@ -43,6 +43,17 @@ class _BannerWidgetState extends State<BannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Text('Banner');
+    return SizedBox(
+      height: 140,
+      width: MediaQuery.of(context).size.width,
+      child: PageView.builder(
+        itemCount: _bannerImage.length,
+        itemBuilder: (context, index) {
+          return Image.network(
+            _bannerImage[index],
+          );
+        },
+      ),
+    );
   }
 }
