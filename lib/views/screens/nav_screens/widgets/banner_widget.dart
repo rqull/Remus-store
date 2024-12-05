@@ -61,10 +61,36 @@ class _BannerWidgetState extends State<BannerWidget> {
                         fit: BoxFit.cover,
                       );
                     },
-                  )
+                  ),
+                  _buildPageIndicator(snapshot.data!.length)
                 ],
               );
             }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator(int pageCount) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          pageCount,
+          (index) {
+            return Container(
+              height: 8,
+              width: 8,
+              margin: EdgeInsets.symmetric(
+                horizontal: 4,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                shape: BoxShape.circle,
+              ),
+            );
           },
         ),
       ),

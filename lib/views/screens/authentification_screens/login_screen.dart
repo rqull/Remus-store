@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
             return MainScreen();
           },
         ));
-        //we want to show a massage to the user to tell them they have loged in
+
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Logged in')));
       });
