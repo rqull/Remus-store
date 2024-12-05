@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mob3_uas_klp_04/controllers/banner_controller.dart';
 
@@ -56,9 +57,12 @@ class _BannerWidgetState extends State<BannerWidget> {
                   PageView.builder(
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
-                      return Image.network(
-                        snapshot.data![index],
+                      return CachedNetworkImage(
+                        imageUrl: snapshot.data![index],
                         fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       );
                     },
                   ),
