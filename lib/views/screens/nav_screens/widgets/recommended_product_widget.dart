@@ -19,15 +19,16 @@ class RecommendedProductWidget extends StatelessWidget {
           );
         }
 
-        return ListView(
-          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-            Map<String, dynamic> data =
-                document.data()! as Map<String, dynamic>;
-            return ListTile(
-              title: Text(data['full_name']),
-              subtitle: Text(data['company']),
-            );
-          }).toList(),
+        return SizedBox(
+          height: 250,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              final productData = snapshot.data!.docs[index];
+              return Text(productData['productName']);
+            },
+          ),
         );
       },
     );
