@@ -58,4 +58,23 @@ class AuthController {
 
     return res;
   }
+
+  // Reset Password function
+  Future<String> resetPassword(String email) async {
+    String res = "something went wrong";
+
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      res = 'Password reset email sent successfully';
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        res = 'No user found for that email.';
+      } else {
+        res = e.message ?? 'An error occurred';
+      }
+    } catch (e) {
+      res = e.toString();
+    }
+    return res;
+  }
 }

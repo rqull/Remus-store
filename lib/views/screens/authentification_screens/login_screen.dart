@@ -47,6 +47,82 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showResetPasswordDialog() {
+    String resetEmail = '';
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Reset Password'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Enter your email to receive a password reset link'),
+                  SizedBox(height: 10),
+                  TextField(
+                    onChanged: (value) {
+                      resetEmail = value;
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Enter your email',
+                    ),
+                  ),
+                  if (isLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: CircularProgressIndicator(),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (resetEmail.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Please enter your email')),
+                            );
+                            return;
+                          }
+
+                          setState(() {
+                            isLoading = true;
+                          });
+
+                          String res =
+                              await _authController.resetPassword(resetEmail);
+
+                          setState(() {
+                            isLoading = false;
+                          });
+
+                          Navigator.pop(context);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(res)),
+                          );
+                        },
+                  child: Text('Reset Password'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,33 +179,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return 'Enter your Email';
+                        return 'Please enter your email';
                       } else {
                         return null;
                       }
                     },
-                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      fillColor: Colors.white,
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(9),
-                      ),
-                      focusedBorder: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      labelText: "Enter your Email",
-                      labelStyle: GoogleFonts.nunitoSans(
-                        textStyle: TextStyle(
-                          fontSize: 14,
-                          letterSpacing: 0.1,
-                        ),
-                      ),
-                      prefixIcon: Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Image.asset(
-                          'assets/icons/email.png',
-                          width: 20,
-                          height: 20,
+                      hintText: 'Enter your Email',
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        _showResetPasswordDialog();
+                      },
+                      child: Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

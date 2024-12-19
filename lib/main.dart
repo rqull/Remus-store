@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:get/instance_manager.dart';
+import 'package:mob3_uas_klp_04/controllers/category_controller.dart';
 import 'package:mob3_uas_klp_04/views/screens/authentification_screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_screen.dart';
@@ -22,9 +25,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(statusBarColor: Colors.transparent));
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       home: MainScreen(),
+      initialBinding: BindingsBuilder(
+        () {
+          Get.put<CategoryController>(CategoryController());
+        },
+      ),
     );
   }
 }
