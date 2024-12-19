@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mob3_uas_klp_04/views/screens/nav_screens/widgets/product_item_widget.dart';
 
 class RecommendedProductWidget extends StatelessWidget {
   final Stream<QuerySnapshot> _productsStream =
@@ -26,7 +27,9 @@ class RecommendedProductWidget extends StatelessWidget {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               final productData = snapshot.data!.docs[index];
-              return Text(productData['productName']);
+              return ProductItemWidget(
+                productData: productData,
+              );
             },
           ),
         );
