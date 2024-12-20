@@ -52,6 +52,37 @@ class ProductItemWidget extends StatelessWidget {
               ),
             ),
           ),
+          Positioned(
+            left: 7,
+            top: 177,
+            child: Text(
+              productData['category'],
+              style: GoogleFonts.lato(
+                textStyle: TextStyle(
+                  color: Color(0XFF7F8E9D),
+                  fontSize: 12,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 7,
+            top: 207,
+            child: Text(
+              '\$${productData['discount']}',
+              style: GoogleFonts.lato(
+                color: Color(0XFF1E3354),
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 51,
+            top: 210,
+            child: Text('\$${productData['price']}'),
+          )
         ],
       ),
     );
