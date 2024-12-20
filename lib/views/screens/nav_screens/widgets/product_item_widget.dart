@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProductItemWidget extends StatelessWidget {
   final dynamic productData;
@@ -81,7 +82,130 @@ class ProductItemWidget extends StatelessWidget {
           Positioned(
             left: 51,
             top: 210,
-            child: Text('\$${productData['price']}'),
+            child: Text(
+              '\$${productData['productPrice']}',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.3,
+                decoration: TextDecoration.lineThrough,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 9,
+            top: 9,
+            child: Container(
+              width: 128,
+              height: 108,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    top: -1,
+                    left: -1,
+                    child: Container(
+                      width: 130,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFF5C3),
+                        border: Border.all(width: 0.8, color: Colors.white),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 14,
+                    top: 4,
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Container(
+                        height: 100,
+                        width: 100,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFFF44F),
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 10,
+                    top: -10,
+                    child: CachedNetworkImage(
+                      imageUrl: productData['imageUrls'][0],
+                      width: 108,
+                      height: 107,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 56,
+            top: 155,
+            child: Text(
+              '500> Sold',
+              style: GoogleFonts.lato(
+                textStyle: TextStyle(
+                  color: Color(0XFF7F8E9D),
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 155,
+            left: 23,
+            child: Text(
+              '4.5',
+              style: GoogleFonts.lato(
+                textStyle: TextStyle(
+                  color: Color(0XFF7F8E9D),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 104,
+            top: 15,
+            child: Container(
+              width: 27,
+              height: 27,
+              decoration: BoxDecoration(
+                color: Color(0xFFFA634D),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x33FF200),
+                    spreadRadius: 0,
+                    blurRadius: 15,
+                    offset: Offset(0, 7),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            right: 5,
+            top: 5,
+            child: IconButton(
+              onPressed: () {},
+              icon: Icon(
+                Icons.favorite_border,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
           )
         ],
       ),
