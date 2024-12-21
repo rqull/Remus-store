@@ -150,7 +150,7 @@ class ProductItemWidget extends StatelessWidget {
                       left: 10,
                       top: -10,
                       child: CachedNetworkImage(
-                        imageUrl: productData['productImage'][0],
+                        imageUrl: productData['productImages'][0],
                         width: 108,
                         height: 107,
                       ),
