@@ -63,8 +63,29 @@ class ProductDetailScreen extends StatelessWidget {
                   top: 0,
                   child: Container(
                     width: 216,
+                    height: 274,
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF9CA8FF),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: SizedBox(
+                      height: 300,
+                      child: PageView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: productData['imageUrls'].length,
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            productData['imageUrls'][index],
+                            width: 198,
+                            height: 225,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
