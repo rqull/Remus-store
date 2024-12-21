@@ -91,7 +91,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       : () async {
                           if (resetEmail.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Please enter your email')),
+                              SnackBar(
+                                  content: Text('Please enter your email')),
                             );
                             return;
                           }
@@ -186,22 +187,32 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     decoration: InputDecoration(
                       hintText: 'Enter your Email',
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        _showResetPasswordDialog();
-                      },
-                      child: Text(
-                        'Forgot Password?',
-                        style: TextStyle(
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Image.asset(
+                          'assets/icons/email.png',
+                          width: 20,
+                          height: 20,
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
                           color: Colors.blue,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -222,32 +233,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   TextFormField(
-                    obscureText: !_isPasswordVisibility,
                     onChanged: (value) {
                       password = value;
                     },
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return 'Enter your Password';
+                        return 'Please enter your password';
                       } else {
                         return null;
                       }
                     },
+                    obscureText: !_isPasswordVisibility,
                     decoration: InputDecoration(
-                      fillColor: Colors.white,
+                      hintText: 'Enter your Password',
                       filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(9),
-                      ),
-                      focusedBorder: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      labelText: "Enter your Password",
-                      labelStyle: GoogleFonts.nunitoSans(
-                        textStyle: TextStyle(
-                          fontSize: 14,
-                          letterSpacing: 0.1,
-                        ),
-                      ),
+                      fillColor: Colors.white,
                       prefixIcon: Padding(
                         padding: EdgeInsets.all(10),
                         child: Image.asset(
@@ -257,14 +257,50 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisibility = !_isPasswordVisibility;
-                            });
-                          },
-                          icon: _isPasswordVisibility
-                              ? Icon(Icons.visibility)
-                              : Icon(Icons.visibility_off)),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisibility = !_isPasswordVisibility;
+                          });
+                        },
+                        icon: Icon(
+                          _isPasswordVisibility
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        _showResetPasswordDialog();
+                      },
+                      child: Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(
