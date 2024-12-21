@@ -73,10 +73,10 @@ class ProductDetailScreen extends StatelessWidget {
                       height: 300,
                       child: PageView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: productData['imageUrls'].length,
+                        itemCount: productData['productImages'].length,
                         itemBuilder: (context, index) {
                           return Image.network(
-                            productData['imageUrls'][index],
+                            productData['productImages'][index],
                             width: 198,
                             height: 225,
                             fit: BoxFit.cover,
