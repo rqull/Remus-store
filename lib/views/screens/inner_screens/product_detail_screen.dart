@@ -200,8 +200,11 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   Text(
                     productData['description'],
+                    textAlign: TextAlign.justify,
                     style: GoogleFonts.lato(
-                      textStyle: TextStyle(fontSize: 16),
+                      textStyle: TextStyle(
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],
