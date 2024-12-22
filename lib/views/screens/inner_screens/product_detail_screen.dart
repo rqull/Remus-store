@@ -1,13 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+import '../../../provider/cart_provider.dart';
+
+class ProductDetailScreen extends ConsumerStatefulWidget {
   final dynamic productData;
 
   const ProductDetailScreen({super.key, required this.productData});
 
   @override
+  _ProductDetailScreenState createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  String selectedSize = '';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.productData['sizes'] != null && widget.productData['sizes'].isNotEmpty) {
+      selectedSize = widget.productData['sizes'][0];
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final _cartProvider = ref.read(cartProvider.notifier);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -76,10 +95,11 @@ class ProductDetailScreen extends StatelessWidget {
                           height: 300,
                           child: PageView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: productData['productImages'].length,
+                            itemCount:
+                                widget.productData['productImages'].length,
                             itemBuilder: (context, index) {
                               return Image.network(
-                                productData['productImages'][index],
+                                widget.productData['productImages'][index],
                                 width: 198,
                                 height: 225,
                                 fit: BoxFit.cover,
@@ -99,7 +119,7 @@ class ProductDetailScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    productData['productName'],
+                    widget.productData['productName'],
                     style: GoogleFonts.roboto(
                       textStyle: TextStyle(
                         fontSize: 17,
@@ -110,7 +130,7 @@ class ProductDetailScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '\$${productData['productPrice'].toStringAsFixed(2)}',
+                    '\$${widget.productData['productPrice'].toStringAsFixed(2)}',
                     style: GoogleFonts.roboto(
                       textStyle: TextStyle(
                         fontSize: 17,
@@ -126,7 +146,7 @@ class ProductDetailScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                productData['category'],
+                widget.productData['category'],
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -142,34 +162,50 @@ class ProductDetailScreen extends StatelessWidget {
                     'Size:',
                     style: GoogleFonts.lato(
                       textStyle: TextStyle(
-                          color: Color(0xFF343434),
-                          fontSize: 16,
-                          letterSpacing: 1.6),
+                        color: Color(0xFF343434),
+                        fontSize: 16,
+                        letterSpacing: 1.6,
+                      ),
                     ),
                   ),
-                  SizedBox(
+                  Container(
                     height: 50,
+                    width: MediaQuery.of(context).size.width * 0.7,
                     child: ListView.builder(
-                      shrinkWrap: true,
                       scrollDirection: Axis.horizontal,
-                      itemCount: productData['sizes'].length,
+                      itemCount: widget.productData['sizes'].length,
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: InkWell(
-                            onTap: () {},
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedSize = widget.productData['sizes'][index];
+                              });
+                            },
                             child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                               decoration: BoxDecoration(
-                                color: Color(0xFF126881),
+                                color: selectedSize == widget.productData['sizes'][index]
+                                    ? Color(0xFF126881)
+                                    : Colors.white,
                                 borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                  color: selectedSize == widget.productData['sizes'][index]
+                                      ? Colors.transparent
+                                      : Color(0xFF126881),
+                                ),
                               ),
-                              child: Padding(
-                                padding: EdgeInsets.all(8),
+                              child: Center(
                                 child: Text(
-                                  productData['sizes'][index],
+                                  widget.productData['sizes'][index],
                                   style: GoogleFonts.lato(
                                     textStyle: TextStyle(
-                                      color: Colors.white,
+                                      color: selectedSize == widget.productData['sizes'][index]
+                                          ? Colors.white
+                                          : Color(0xFF126881),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
@@ -199,7 +235,7 @@ class ProductDetailScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    productData['description'],
+                    widget.productData['description'],
                     textAlign: TextAlign.justify,
                     style: GoogleFonts.lato(
                       textStyle: TextStyle(
@@ -215,26 +251,54 @@ class ProductDetailScreen extends StatelessWidget {
       ),
       bottomSheet: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: InkWell(
-          onTap: () {},
-          child: Container(
-            width: 386,
-            height: 48,
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              color: Color(0xFF3B54EE),
+        child: ElevatedButton(
+          onPressed: () {
+            try {
+              if (widget.productData != null) {
+                _cartProvider.addProductToCart(
+                  productName: widget.productData['productName'] ?? '',
+                  productPrice: (widget.productData['productPrice'] ?? 0.0).toDouble(),
+                  categoryName: widget.productData['category'] ?? '',
+                  imageUrl: widget.productData['productImages'] ?? [],
+                  quantity: 1,
+                  instock: widget.productData['quantity'] ?? 0,
+                  productid: widget.productData['productId'] ?? '',
+                  productSize: selectedSize,
+                  discount: widget.productData['discount'] ?? 0,
+                  description: widget.productData['description'] ?? '',
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Product added to cart successfully'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error adding to cart: $e'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF3B54EE),
+            minimumSize: Size(MediaQuery.of(context).size.width - 16, 48),
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
-            child: Center(
-              child: Text(
-                'ADD TO CART',
-                style: GoogleFonts.lato(
-                  textStyle: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+          ),
+          child: Text(
+            'ADD TO CART',
+            style: GoogleFonts.lato(
+              textStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
