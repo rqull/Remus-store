@@ -82,7 +82,7 @@ class ProductItemWidget extends StatelessWidget {
               left: 7,
               top: 207,
               child: Text(
-                '\$${productData['discount']}',
+                '\$${productData['productPrice'].toStringAsFixed(2)}',
                 style: GoogleFonts.lato(
                   color: Color(0XFF1E3354),
                   fontSize: 20,
@@ -90,20 +90,21 @@ class ProductItemWidget extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              left: 51,
-              top: 210,
-              child: Text(
-                '\$${productData['productPrice']}',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.3,
-                  decoration: TextDecoration.lineThrough,
-                ),
-              ),
-            ),
+            // Discount price position
+            // Positioned(
+            //   left: 51,
+            //   top: 210,
+            //   child: Text(
+            //     '\$${productData['discount']}',
+            //     style: TextStyle(
+            //       color: Colors.grey,
+            //       fontSize: 16,
+            //       fontWeight: FontWeight.bold,
+            //       letterSpacing: 0.3,
+            //       decoration: TextDecoration.lineThrough,
+            //     ),
+            //   ),
+            // ),
             Positioned(
               left: 9,
               top: 9,
