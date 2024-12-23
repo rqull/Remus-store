@@ -1,6 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/favorite_models.dart';
 
+final favoriteProvider =
+    StateNotifierProvider<FavoriteNotifier, Map<String, FavoriteModels>>((ref) {
+  return FavoriteNotifier();
+});
+
 class FavoriteNotifier extends StateNotifier<Map<String, FavoriteModels>> {
   FavoriteNotifier() : super({});
 
@@ -27,6 +32,13 @@ class FavoriteNotifier extends StateNotifier<Map<String, FavoriteModels>> {
 
   void removeProductFromFavorite(String productid) {
     state.remove(productid);
+    state = {...state};
+  }
+
+  // Is to remove all product to favorite
+
+  void removeAllProductFromFavorite() {
+    state.clear();
     state = {...state};
   }
 }
