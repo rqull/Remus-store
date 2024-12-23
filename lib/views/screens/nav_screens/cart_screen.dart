@@ -19,6 +19,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final cartData = ref.watch(cartProvider);
+    final _cartProvider = ref.read(cartProvider.notifier);
+    final totalPrice = ref.read(cartProvider.notifier).getTotalPrice();
     return Scaffold(
       appBar: PreferredSize(
         preferredSize:
@@ -240,7 +242,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             child: Row(
                                               children: [
                                                 IconButton(
-                                                  onPressed: () {},
+                                                  onPressed: () {
+                                                    _cartProvider
+                                                        .decrementQuantity(
+                                                            cartItem.productid);
+                                                  },
                                                   icon: Icon(
                                                     CupertinoIcons.minus,
                                                     color: Colors.white,
@@ -258,7 +264,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                   ),
                                                 ),
                                                 IconButton(
-                                                  onPressed: () {},
+                                                  onPressed: () {
+                                                    _cartProvider
+                                                        .incrementQuantity(
+                                                            cartItem.productid);
+                                                  },
                                                   icon: Icon(
                                                     CupertinoIcons.plus,
                                                     color: Colors.white,
@@ -268,7 +278,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             ),
                                           ),
                                           IconButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              _cartProvider
+                                                  .removeProductFromCart(
+                                                      cartItem.productid);
+                                            },
                                             icon: Icon(
                                               CupertinoIcons.delete,
                                               color: Colors.red,
@@ -289,6 +303,89 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ],
               ),
             ),
+      bottomNavigationBar: Container(
+        width: 416,
+        height: 89,
+        clipBehavior: Clip.hardEdge,
+        decoration: const BoxDecoration(),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(
+                    color: const Color(0xFFC4C4C4),
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment(-0.63, -0.26),
+              child: Text(
+                'Subtotal',
+                style: GoogleFonts.roboto(
+                  textStyle: const TextStyle(
+                    color: Color(0xFFA1A1A1),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment(
+                -0.19,
+                -0.31,
+              ),
+              child: Text(
+                totalPrice.toStringAsFixed(2),
+                style: GoogleFonts.roboto(
+                  textStyle: const TextStyle(
+                    color: Color(0xFFFF6464),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment(0.83, -1),
+              child: InkWell(
+                onTap: () {},
+                child: Container(
+                  width: 166,
+                  height: 71,
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    color: totalPrice == 0.0 ? Colors.grey : Color(0xFF1532E7),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Checkout',
+                        style: GoogleFonts.roboto(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
