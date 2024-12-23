@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../../provider/cart_provider.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -19,7 +18,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.productData['sizes'] != null && widget.productData['sizes'].isNotEmpty) {
+    if (widget.productData['sizes'] != null &&
+        widget.productData['sizes'].isNotEmpty) {
       selectedSize = widget.productData['sizes'][0];
     }
   }
@@ -180,18 +180,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                selectedSize = widget.productData['sizes'][index];
+                                selectedSize =
+                                    widget.productData['sizes'][index];
                               });
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 8),
                               decoration: BoxDecoration(
-                                color: selectedSize == widget.productData['sizes'][index]
+                                color: selectedSize ==
+                                        widget.productData['sizes'][index]
                                     ? Color(0xFF126881)
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(5),
                                 border: Border.all(
-                                  color: selectedSize == widget.productData['sizes'][index]
+                                  color: selectedSize ==
+                                          widget.productData['sizes'][index]
                                       ? Colors.transparent
                                       : Color(0xFF126881),
                                 ),
@@ -201,7 +205,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   widget.productData['sizes'][index],
                                   style: GoogleFonts.lato(
                                     textStyle: TextStyle(
-                                      color: selectedSize == widget.productData['sizes'][index]
+                                      color: selectedSize ==
+                                              widget.productData['sizes'][index]
                                           ? Colors.white
                                           : Color(0xFF126881),
                                       fontSize: 14,
@@ -257,7 +262,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               if (widget.productData != null) {
                 _cartProvider.addProductToCart(
                   productName: widget.productData['productName'] ?? '',
-                  productPrice: (widget.productData['productPrice'] ?? 0.0).toDouble(),
+                  productPrice:
+                      (widget.productData['productPrice'] ?? 0.0).toDouble(),
                   categoryName: widget.productData['category'] ?? '',
                   imageUrl: widget.productData['productImages'] ?? [],
                   quantity: 1,
