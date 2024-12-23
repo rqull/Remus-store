@@ -2,21 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mob3_uas_klp_04/views/screens/inner_screens/product_detail_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProductItemWidget extends StatelessWidget {
+import '../../../../provider/favorite_provider.dart';
+
+class ProductItemWidget extends ConsumerStatefulWidget {
   final dynamic productData;
 
   const ProductItemWidget({super.key, required this.productData});
 
   @override
+  ConsumerState<ProductItemWidget> createState() => _ProductItemWidgetState();
+}
+
+class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
+  @override
   Widget build(BuildContext context) {
+    final favoriteProviderData = ref.read(favoriteProvider.notifier);
+    final favoriteData = ref.watch(favoriteProvider);
     return InkWell(
       onTap: () {
         Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ProductDetailScreen(
-                productData: productData,
+                productData: widget.productData,
               ),
             ));
       },
@@ -53,7 +63,7 @@ class ProductItemWidget extends StatelessWidget {
               left: 7,
               top: 130,
               child: Text(
-                productData['productName'],
+                widget.productData['productName'],
                 style: GoogleFonts.lato(
                   textStyle: TextStyle(
                     color: Color(0XFF1E3354),
@@ -68,7 +78,7 @@ class ProductItemWidget extends StatelessWidget {
               left: 7,
               top: 177,
               child: Text(
-                productData['category'],
+                widget.productData['category'],
                 style: GoogleFonts.lato(
                   textStyle: TextStyle(
                     color: Color(0XFF7F8E9D),
@@ -82,7 +92,7 @@ class ProductItemWidget extends StatelessWidget {
               left: 7,
               top: 207,
               child: Text(
-                '\$${productData['productPrice'].toStringAsFixed(2)}',
+                '\$${widget.productData['productPrice'].toStringAsFixed(2)}',
                 style: GoogleFonts.lato(
                   color: Color(0XFF1E3354),
                   fontSize: 20,
@@ -151,7 +161,7 @@ class ProductItemWidget extends StatelessWidget {
                       left: 10,
                       top: -10,
                       child: CachedNetworkImage(
-                        imageUrl: productData['productImages'][0],
+                        imageUrl: widget.productData['productImages'][0],
                         width: 108,
                         height: 107,
                       ),
@@ -194,7 +204,8 @@ class ProductItemWidget extends StatelessWidget {
                 width: 27,
                 height: 27,
                 decoration: BoxDecoration(
-                  color: Color(0xFFFA634D),
+                  // color: Color(0xFFFA634D),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
@@ -210,13 +221,53 @@ class ProductItemWidget extends StatelessWidget {
             Positioned(
               right: 5,
               top: 5,
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.favorite_border,
-                  color: Colors.white,
-                  size: 16,
-                ),
+              child: //IconButton(
+                  //   onPressed: () {},
+                  //   icon: Icon(
+                  //     Icons.favorite_border,
+                  //     color: Colors.white,
+                  //     size: 16,
+                  //   ),
+                  // ),
+                  IconButton(
+                onPressed: () {
+                  try {
+                    favoriteProviderData.addProductToFavorite(
+                      productName: widget.productData['productName'] ?? '',
+                      productid: widget.productData['productId'] ?? '',
+                      imageUrl: widget.productData['productImages'] ?? [],
+                      productPrice: widget.productData['productPrice'] ?? 0.0,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          favoriteData
+                                  .containsKey(widget.productData['productId'])
+                              ? ' ${widget.productData['productName']} Removed from favorites'
+                              : ' ${widget.productData['productName']} Added to favorites',
+                        ),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                icon: favoriteData.containsKey(widget.productData['productId'])
+                    ? const Icon(
+                        Icons.favorite,
+                        color: Colors.red,
+                      )
+                    : const Icon(
+                        Icons.favorite_border,
+                        color: Colors.red,
+                      ),
               ),
             )
           ],
