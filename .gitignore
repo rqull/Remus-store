@@ -50,3 +50,4 @@ app.*.map.json
 /windows/
 /linux/
 firebase_options.dart
+.vscode
