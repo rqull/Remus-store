@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         SystemUiOverlayStyle(statusBarColor: Colors.transparent));
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MainScreen(),
+      home: LoginScreen(),
       initialBinding: BindingsBuilder(
         () {
           Get.put<CategoryController>(CategoryController());
