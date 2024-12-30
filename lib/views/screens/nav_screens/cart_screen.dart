@@ -6,6 +6,7 @@ import 'package:badges/badges.dart' as badges;
 import '../../../provider/cart_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../inner_screens/chekout_screen.dart';
 import '../main_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -353,9 +354,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ),
             ),
             Align(
-              alignment: Alignment(0.83, -1),
+              alignment: const Alignment(0.83, -1),
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return const ChekoutScreen();
+                  }));
+                },
                 child: Container(
                   width: 166,
                   height: 71,

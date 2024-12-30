@@ -43,9 +43,10 @@ app.*.map.json
 /android/app/release
 
 # project.properties
-android/
-ios/
-web/
-macos/
-windows/
-firebase.json
+/android/
+/ios/
+/web/
+/macos/
+/windows/
+/linux/
+firebase_options.dart
