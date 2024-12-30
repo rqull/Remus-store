@@ -70,9 +70,11 @@ lib/
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
 
 ### Home Screen
+
 <img src="https://i.ibb.co.com/Pryz4Bs/Home-screen.png" width="250">
 
 ### Product Detail
+
 <img src="https://i.ibb.co.com/zmL4pVy/Product-detail.png" width="250">
 
 </div>
