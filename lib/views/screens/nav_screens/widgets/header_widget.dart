@@ -17,7 +17,7 @@ class HeaderWidget extends StatelessWidget {
           ),
           Positioned(
             left: 48,
-            top: 80,
+            top: 65,
             child: SizedBox(
               width: 250,
               height: 50,
