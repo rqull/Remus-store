@@ -122,6 +122,12 @@ class CartNotifier extends StateNotifier<Map<String, CartModels>> {
     }
   }
 
+  void clearCartData() {
+    state.clear();
+
+    state = {...state};
+  }
+
   double getTotalPrice() {
     double totalPrice = 0;
     for (var entry in state.entries) {

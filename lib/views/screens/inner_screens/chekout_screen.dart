@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../provider/cart_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../main_screen.dart';
+
 class ChekoutScreen extends ConsumerStatefulWidget {
   const ChekoutScreen({super.key});
 
@@ -15,6 +17,7 @@ class ChekoutScreen extends ConsumerStatefulWidget {
 
 class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool isLoading = false;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String _selectedPaymentMethod = 'Stripe';
   @override
@@ -193,9 +196,12 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
               // Stripe payment
             } else {
               // Cash on delivery
+              setState(() {
+                isLoading = true;
+              });
               for (var item in ref.read(cartProvider).values) {
                 DocumentSnapshot userDoc = await _firestore
-                    .collection('buyer')
+                    .collection('buyers')
                     .doc(_auth.currentUser!.uid)
                     .get();
 
@@ -203,14 +209,13 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
                 final orderId = Uuid().v4();
                 await orderRef.doc(orderId).set({
                   'orderId': orderId,
-                  'userId': _auth.currentUser!.uid,
-                  'productId': item.productid,
                   'productName': item.productName,
-                  'productPrice': item.quantity * item.productPrice,
+                  'productId': item.productid,
                   'productSize': item.productSize,
                   'quantity': item.quantity,
+                  'productPrice': item.quantity * item.productPrice,
                   'categoryName': item.categoryName,
-                  'imageUrl': item.imageUrl[0],
+                  'productImage': item.imageUrl[0],
                   'state': (userDoc.data() as Map<String, dynamic>)['state'],
                   'email': (userDoc.data() as Map<String, dynamic>)['email'],
                   'locality':
@@ -222,7 +227,25 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
                   'delivered': false,
                   'processing': true,
                   'orderDate': DateTime.now(),
-                });
+                }).whenComplete(
+                  () {
+                    cartProviderData.clear();
+                    Navigator.pushReplacement(context, MaterialPageRoute(
+                      builder: (context) {
+                        return MainScreen();
+                      },
+                    ));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        backgroundColor: Colors.grey,
+                        content: Text('Order Placed Successfully'),
+                      ),
+                    );
+                    setState(() {
+                      isLoading = false;
+                    });
+                  },
+                );
               }
             }
           },
@@ -231,19 +254,23 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
             width: MediaQuery.of(context).size.width - 50,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: Color(0xFF1532E7),
+              color: const Color(0xFF1532E7),
             ),
-            child: const Center(
-              child: Text(
-                'Place Order',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  height: 1.4,
-                  fontSize: 18,
-                ),
-                textAlign: TextAlign.center,
-              ),
+            child: Center(
+              child: isLoading
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : const Text(
+                      'Place Order',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        height: 1.4,
+                        fontSize: 18,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
             ),
           ),
         ),
