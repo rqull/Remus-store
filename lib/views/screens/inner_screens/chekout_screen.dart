@@ -25,167 +25,308 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
     final cartProviderData = ref.read(cartProvider);
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue,
         title: const Text(
           'Chekout',
+          style: TextStyle(color: Colors.white),
         ),
       ),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'Your item',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Flexible(
-              child: ListView.builder(
-                itemCount: cartProviderData.length,
-                shrinkWrap: true,
-                physics: ScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final cartItem = cartProviderData.values.toList()[index];
-
-                  return InkWell(
-                    onTap: () {},
-                    child: Container(
-                      width: 336,
-                      height: 91,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: Color(0xFFEFF0F2),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: () {},
+                child: SizedBox(
+                  width: 335,
+                  height: 74,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        child: Container(
+                          width: 335,
+                          height: 74,
+                          clipBehavior: Clip.hardEdge,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: Color(0xFFEFF0F2),
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned(
-                            left: 6,
-                            top: 6,
-                            child: SizedBox(
-                              width: 311,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    width: 78,
-                                    height: 78,
+                      Positioned(
+                        left: 70,
+                        top: 17,
+                        child: SizedBox(
+                          width: 215,
+                          height: 41,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned(
+                                left: -1,
+                                top: -1,
+                                child: SizedBox(
+                                  width: 219,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'Add Address',
+                                          style: GoogleFonts.lato(
+                                            textStyle: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'Enter City',
+                                          style: GoogleFonts.lato(
+                                            textStyle: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.3,
+                                              color: Color(0xFF7F808C),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 16,
+                        top: 16,
+                        child: SizedBox.square(
+                          dimension: 42,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned(
+                                left: 0,
+                                top: 0,
+                                child: Container(
+                                  width: 43,
+                                  height: 43,
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFBF7F5),
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Stack(
                                     clipBehavior: Clip.hardEdge,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFBCC5FF),
-                                    ),
-                                    child: Image.network(
-                                      cartItem.imageUrl[0],
-                                    ),
+                                    children: [
+                                      Positioned(
+                                        left: 11,
+                                        top: 11,
+                                        child: Image.network(
+                                          'https://storage.googleapis.com/codeless-dev.appspot.com/uploads%2Fimages%2Fnn2Ldqjoc2Xp89Y7Wfzf%2F2ee3a5ce3b02828d0e2806584a6baa88.png',
+                                          height: 20,
+                                          width: 20,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(
-                                    width: 11,
-                                  ),
-                                  Expanded(
-                                    child: Container(
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 305,
+                        top: 25,
+                        child: Image.asset(
+                          'assets/icons/pencil.png',
+                          height: 20,
+                          width: 20,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                'Your item',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Flexible(
+                child: ListView.builder(
+                  itemCount: cartProviderData.length,
+                  shrinkWrap: true,
+                  physics: ScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final cartItem = cartProviderData.values.toList()[index];
+
+                    return InkWell(
+                      onTap: () {},
+                      child: Container(
+                        width: 336,
+                        height: 91,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: Color(0xFFEFF0F2),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(
+                              left: 6,
+                              top: 6,
+                              child: SizedBox(
+                                width: 311,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      width: 78,
                                       height: 78,
-                                      alignment: Alignment(0, -0.51),
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SizedBox(
-                                              width: double.infinity,
-                                              child: Text(
-                                                cartItem.productName,
-                                                style: GoogleFonts.lato(
-                                                  textStyle: TextStyle(
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      height: 1.3),
+                                      clipBehavior: Clip.hardEdge,
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFBCC5FF),
+                                      ),
+                                      child: Image.network(
+                                        cartItem.imageUrl[0],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 11,
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        height: 78,
+                                        alignment: Alignment(0, -0.51),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: Text(
+                                                  cartItem.productName,
+                                                  style: GoogleFonts.lato(
+                                                    textStyle: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        height: 1.3),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                              height: 4,
-                                            ),
-                                            Align(
-                                              alignment: AlignmentDirectional
-                                                  .centerStart,
-                                              child: Text(
-                                                cartItem.categoryName,
-                                                style: const TextStyle(
-                                                  color: Colors.blueGrey,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                              SizedBox(
+                                                height: 4,
                                               ),
-                                            )
-                                          ],
+                                              Align(
+                                                alignment: AlignmentDirectional
+                                                    .centerStart,
+                                                child: Text(
+                                                  cartItem.categoryName,
+                                                  style: const TextStyle(
+                                                    color: Colors.blueGrey,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    width: 16,
-                                  ),
-                                  Text(
-                                    cartItem.productPrice.toStringAsFixed(2),
-                                    style: GoogleFonts.lato(
-                                      textStyle: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.pink,
-                                        height: 1.3,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                    SizedBox(
+                                      width: 16,
                                     ),
-                                  )
-                                ],
+                                    Text(
+                                      cartItem.productPrice.toStringAsFixed(2),
+                                      style: GoogleFonts.lato(
+                                        textStyle: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.pink,
+                                          height: 1.3,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              Text(
+                'Choose Payment Method',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              RadioListTile<String>(
+                title: const Text('Stripe'),
+                value: 'Stripe',
+                groupValue: _selectedPaymentMethod,
+                onChanged: (String? value) {
+                  setState(() {
+                    _selectedPaymentMethod = value!;
+                  });
                 },
               ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            Text(
-              'Choose Payment Method',
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
+              RadioListTile<String>(
+                title: const Text('Cash on Delivery'),
+                value: 'Cash on Delivery',
+                groupValue: _selectedPaymentMethod,
+                onChanged: (String? value) {
+                  setState(() {
+                    _selectedPaymentMethod = value!;
+                  });
+                },
               ),
-            ),
-            RadioListTile<String>(
-              title: const Text('Stripe'),
-              value: 'Stripe',
-              groupValue: _selectedPaymentMethod,
-              onChanged: (String? value) {
-                setState(() {
-                  _selectedPaymentMethod = value!;
-                });
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Cash on Delivery'),
-              value: 'Cash on Delivery',
-              groupValue: _selectedPaymentMethod,
-              onChanged: (String? value) {
-                setState(() {
-                  _selectedPaymentMethod = value!;
-                });
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomSheet: Padding(
