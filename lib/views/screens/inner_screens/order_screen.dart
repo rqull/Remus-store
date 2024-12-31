@@ -206,14 +206,32 @@ class _OrderScreenState extends State<OrderScreen> {
                                         Text(
                                           "\$${orderData['productPrice']}",
                                           style: const TextStyle(
-                                              color: Color(0xFF0B0C1E),
-                                              fontSize: 14),
-                                        )
+                                            color: Color(0xFF0B0C1E),
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
                                 ),
                               ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 113,
+                          left: 13,
+                          child: Container(
+                            width: 77,
+                            height: 25,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              color: orderData['delivered'] == true
+                                  ? Color(0xFF3C55EF)
+                                  : orderData['processing'] == true
+                                      ? Colors.purple
+                                      : Colors.red,
+                              borderRadius: BorderRadius.circular(4),
                             ),
                           ),
                         )
