@@ -7,6 +7,7 @@ import '../../../provider/cart_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../main_screen.dart';
+import 'shipping_address_screen.dart';
 
 class ChekoutScreen extends ConsumerStatefulWidget {
   const ChekoutScreen({super.key});
@@ -20,6 +21,38 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
   bool isLoading = false;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String _selectedPaymentMethod = 'Stripe';
+
+  // get current user information
+  String state = '';
+  String city = '';
+  String locality = '';
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    getUserData();
+    super.initState();
+  }
+
+  // get current user detail
+  void getUserData() {
+    Stream<DocumentSnapshot> userDataStream =
+        _firestore.collection('buyers').doc(_auth.currentUser!.uid).snapshots();
+
+    // Listen to the stream and update the data
+    userDataStream.listen(
+      (DocumentSnapshot userData) {
+        if (userData.exists) {
+          setState(() {
+            state = userData.get('state');
+            city = userData.get('city');
+            locality = userData.get('locality');
+          });
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartProviderData = ref.read(cartProvider);
@@ -38,7 +71,13 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ShippingAddressScreen(),
+                      ));
+                },
                 child: SizedBox(
                   width: 335,
                   height: 74,
@@ -329,93 +368,126 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
           ),
         ),
       ),
-      bottomSheet: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: InkWell(
-          onTap: () async {
-            if (_selectedPaymentMethod == 'Stripe') {
-              // Stripe payment
-            } else {
-              // Cash on delivery
-              setState(() {
-                isLoading = true;
-              });
-              for (var item in ref.read(cartProvider).values) {
-                DocumentSnapshot userDoc = await _firestore
-                    .collection('buyers')
-                    .doc(_auth.currentUser!.uid)
-                    .get();
-
-                CollectionReference orderRef = _firestore.collection('orders');
-                final orderId = Uuid().v4();
-                await orderRef.doc(orderId).set({
-                  'orderId': orderId,
-                  'productName': item.productName,
-                  'productId': item.productid,
-                  'productSize': item.productSize,
-                  'quantity': item.quantity,
-                  'productPrice': item.quantity * item.productPrice,
-                  'categoryName': item.categoryName,
-                  'productImage': item.imageUrl[0],
-                  'state': (userDoc.data() as Map<String, dynamic>)['state'],
-                  'email': (userDoc.data() as Map<String, dynamic>)['email'],
-                  'locality':
-                      (userDoc.data() as Map<String, dynamic>)['locality'],
-                  'fullname':
-                      (userDoc.data() as Map<String, dynamic>)['fullname'],
-                  'buyerId': _auth.currentUser!.uid,
-                  'deliveredCount': 0,
-                  'delivered': false,
-                  'processing': true,
-                  'orderDate': DateTime.now(),
-                }).whenComplete(
-                  () {
-                    cartProviderData.clear();
-                    Navigator.pushReplacement(context, MaterialPageRoute(
+      bottomSheet: state == ''
+          ? Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
                       builder: (context) {
-                        return MainScreen();
+                        return const ShippingAddressScreen();
                       },
                     ));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        backgroundColor: Colors.grey,
-                        content: Text('Order Placed Successfully'),
-                      ),
-                    );
-                    setState(() {
-                      isLoading = false;
-                    });
                   },
-                );
-              }
-            }
-          },
-          child: Container(
-            height: 50,
-            width: MediaQuery.of(context).size.width - 50,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: const Color(0xFF1532E7),
+                  child: const Text('Add Address')),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: InkWell(
+                onTap: () async {
+                  if (_selectedPaymentMethod == 'Stripe') {
+                    // Stripe payment
+                  } else {
+                    // Cash on delivery
+                    setState(() {
+                      isLoading = true;
+                    });
+
+                    // Simpan items dalam list terlebih dahulu
+                    final cartItems = ref.read(cartProvider).values.toList();
+
+                    try {
+                      for (var item in cartItems) {
+                        DocumentSnapshot userDoc = await _firestore
+                            .collection('buyers')
+                            .doc(_auth.currentUser!.uid)
+                            .get();
+
+                        CollectionReference orderRef =
+                            _firestore.collection('orders');
+                        final orderId = const Uuid().v4();
+                        await orderRef.doc(orderId).set({
+                          'orderId': orderId,
+                          'userId': _auth.currentUser!.uid,
+                          'productName': item.productName,
+                          'productId': item.productid,
+                          'productSize': item.productSize,
+                          'quantity': item.quantity,
+                          'productPrice': item.quantity * item.productPrice,
+                          'categoryName': item.categoryName,
+                          'productImage': item.imageUrl[0],
+                          'state':
+                              (userDoc.data() as Map<String, dynamic>)['state'],
+                          'city':
+                              (userDoc.data() as Map<String, dynamic>)['city'],
+                          'email':
+                              (userDoc.data() as Map<String, dynamic>)['email'],
+                          'locality': (userDoc.data()
+                              as Map<String, dynamic>)['locality'],
+                          'fullname': (userDoc.data()
+                              as Map<String, dynamic>)['fullname'],
+                          'buyerId': _auth.currentUser!.uid,
+                          'deliveredCount': 0,
+                          'delivered': false,
+                          'processing': true,
+                          'orderDate': DateTime.now(),
+                        });
+                      }
+
+                      // Clear cart setelah semua order berhasil dibuat
+                      ref.read(cartProvider.notifier).state = {};
+
+                      setState(() {
+                        isLoading = false;
+                      });
+
+                      // Navigate to order screen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>  MainScreen(),
+                        ),
+                      );
+                    } catch (e) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                              Text('Error creating order: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: Container(
+                  height: 50,
+                  width: MediaQuery.of(context).size.width - 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFF1532E7),
+                  ),
+                  child: Center(
+                    child: isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : const Text(
+                            'Place Order',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              height: 1.4,
+                              fontSize: 18,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                  ),
+                ),
+              ),
             ),
-            child: Center(
-              child: isLoading
-                  ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
-                  : const Text(
-                      'Place Order',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        height: 1.4,
-                        fontSize: 18,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
