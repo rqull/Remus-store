@@ -14,11 +14,14 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            HeaderWidget(),
-            BannerWidget(),
-            CategoryItem(),
-            ReuseableTextWidget(
+            const HeaderWidget(),
+            const BannerWidget(),
+            const CategoryItem(),
+            const ReuseableTextWidget(
                 title: 'Recommended for you', subTitle: 'View all'),
+            RecommendedProductWidget(),
+            const ReuseableTextWidget(
+                title: 'Popular Products', subTitle: 'View all'),
             RecommendedProductWidget(),
           ],
         ),

@@ -176,7 +176,7 @@ class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
               child: Text(
                 '500> Sold',
                 style: GoogleFonts.lato(
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     color: Color(0XFF7F8E9D),
                     fontSize: 12,
                   ),
@@ -187,9 +187,11 @@ class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
               top: 155,
               left: 23,
               child: Text(
-                '4.5',
+                widget.productData['rating'] == 0
+                    ? ''
+                    : widget.productData['rating'].toString(),
                 style: GoogleFonts.lato(
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     color: Color(0XFF7F8E9D),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -197,6 +199,18 @@ class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
                 ),
               ),
             ),
+
+            widget.productData['rating'] == 0
+                ? const SizedBox()
+                : const Positioned(
+                    left: 8,
+                    top: 158,
+                    child: Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                      size: 12,
+                    ),
+                  ),
             Positioned(
               left: 104,
               top: 15,
@@ -207,9 +221,9 @@ class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
                   // color: Color(0xFFFA634D),
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
-                      color: Color(0x33FF200),
+                      color: Color(0x033ff200),
                       spreadRadius: 0,
                       blurRadius: 15,
                       offset: Offset(0, 7),

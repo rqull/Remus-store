@@ -4,6 +4,8 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:mob3_uas_klp_04/controllers/category_controller.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../inner_screens/category_product_sceen.dart';
+
 class CategoryItem extends StatefulWidget {
   const CategoryItem({super.key});
 
@@ -22,16 +24,25 @@ class _CategoryItemState extends State<CategoryItem> {
           children: [
             GridView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: _categoryController.categories.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 mainAxisSpacing: 4,
                 crossAxisSpacing: 8,
                 crossAxisCount: 4,
               ),
               itemBuilder: (context, index) {
                 return InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) {
+                        return CategoryProductSceen(
+                          categoryModel:
+                              _categoryController.categories[index],
+                        );
+                      },
+                    ));
+                  },
                   child: Column(
                     children: [
                       Image.network(

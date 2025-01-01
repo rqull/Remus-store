@@ -41,7 +41,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               'Product Detail',
               textAlign: TextAlign.center,
               style: GoogleFonts.lato(
-                textStyle: TextStyle(
+                textStyle: const TextStyle(
                   color: Color(0xFF363330),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -184,12 +184,43 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 widget.productData['category'],
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
+                  color: Colors.grey,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
+            widget.productData['rating'] == 0
+                ? const Text('')
+                : Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        Text(
+                          widget.productData['rating'].toString(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          '(${widget.productData['totalReviews'].toString()})',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -198,7 +229,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   Text(
                     'Size:',
                     style: GoogleFonts.lato(
-                      textStyle: TextStyle(
+                      textStyle: const TextStyle(
                         color: Color(0xFF343434),
                         fontSize: 16,
                         letterSpacing: 1.6,
