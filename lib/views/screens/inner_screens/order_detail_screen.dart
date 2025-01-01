@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final dynamic orderData;
@@ -10,6 +13,41 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  final TextEditingController _reviewController = TextEditingController();
+  double rating = 0;
+
+  // is to check if the user has already reviewed the product or not
+  Future<bool> hasUserReviewedProduct(String productId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('productsReviews')
+        .where('productId', isEqualTo: productId)
+        .where('buyerId', isEqualTo: user!.uid)
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  }
+
+// update review and rating within the product collection
+  Future<void> updateProductRating(String productId) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('productsReviews')
+        .where('productId', isEqualTo: productId)
+        .get();
+
+    double totalRating = 0;
+    int totalReviews = querySnapshot.docs.length;
+    for (var doc in querySnapshot.docs) {
+      totalRating += doc['rating'];
+    }
+    final double averageRating =
+        totalReviews > 0 ? totalRating / totalReviews : 0;
+    await FirebaseFirestore.instance
+        .collection('products')
+        .doc(productId)
+        .update({'rating': averageRating, 'totalReviews': totalReviews});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -200,7 +238,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
             child: Container(
               width: 336,
-              height: 154,
+              height: 195,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -259,7 +297,252 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                   widget.orderData['delivered'] == true
                       ? ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            final productId = widget.orderData['productId'];
+                            final hasReviewed =
+                                await hasUserReviewedProduct(productId);
+                            if (hasReviewed) {
+                              await showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Update a Review'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextFormField(
+                                          controller: _reviewController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Update Your Review',
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: RatingBar.builder(
+                                            initialRating: rating,
+                                            direction: Axis.horizontal,
+                                            minRating: 1,
+                                            maxRating: 5,
+                                            allowHalfRating: true,
+                                            itemSize: 24,
+                                            unratedColor: Colors.grey,
+                                            itemCount: 5,
+                                            itemPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 4.0),
+                                            itemBuilder: (context, _) {
+                                              return const Icon(Icons.star,
+                                                  color: Colors.amber);
+                                            },
+                                            onRatingUpdate: (value) {
+                                              rating = value;
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () async {
+                                          if (_reviewController.text.isEmpty) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Please write a review'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                          if (rating == 0) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Please give a rating'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          try {
+                                            final review =
+                                                _reviewController.text;
+                                            await FirebaseFirestore.instance
+                                                .collection('productsReviews')
+                                                .doc(
+                                                    widget.orderData['orderId'])
+                                                .update({
+                                              'reviewId':
+                                                  widget.orderData['orderId'],
+                                              'productId':
+                                                  widget.orderData['productId'],
+                                              'fullName':
+                                                  widget.orderData['fullname'],
+                                              'email':
+                                                  widget.orderData['email'],
+                                              'buyerId': FirebaseAuth
+                                                  .instance.currentUser!.uid,
+                                              'rating': rating,
+                                              'review': review,
+                                              'timeStamp': Timestamp.now(),
+                                            });
+                                            await updateProductRating(productId);
+                                            Navigator.of(context).pop();
+                                            _reviewController.clear();
+                                            rating = 0;
+
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Review submitted successfully'),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
+                                          } catch (e) {
+                                            print(
+                                                'Error submitting review: $e');
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    'Error submitting review: $e'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: Text('Submit'),
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              await showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('Leave a Review'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextFormField(
+                                          controller: _reviewController,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Your Review',
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: RatingBar.builder(
+                                            initialRating: rating,
+                                            direction: Axis.horizontal,
+                                            minRating: 1,
+                                            maxRating: 5,
+                                            allowHalfRating: true,
+                                            itemSize: 24,
+                                            unratedColor: Colors.grey,
+                                            itemCount: 5,
+                                            itemPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 4.0),
+                                            itemBuilder: (context, _) {
+                                              return const Icon(Icons.star,
+                                                  color: Colors.amber);
+                                            },
+                                            onRatingUpdate: (value) {
+                                              rating = value;
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () async {
+                                          if (_reviewController.text.isEmpty) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Please write a review'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                          if (rating == 0) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Please give a rating'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          try {
+                                            final review =
+                                                _reviewController.text;
+                                            await FirebaseFirestore.instance
+                                                .collection('productsReviews')
+                                                .doc(
+                                                    widget.orderData['orderId'])
+                                                .set({
+                                              'reviewId':
+                                                  widget.orderData['orderId'],
+                                              'productId':
+                                                  widget.orderData['productId'],
+                                              'fullName':
+                                                  widget.orderData['fullname'],
+                                              'email':
+                                                  widget.orderData['email'],
+                                              'buyerId': FirebaseAuth
+                                                  .instance.currentUser!.uid,
+                                              'rating': rating,
+                                              'review': review,
+                                              'timeStamp': Timestamp.now(),
+                                            });
+                                            await updateProductRating(productId);
+                                            Navigator.of(context).pop();
+                                            _reviewController.clear();
+                                            rating = 0;
+
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Review submitted successfully'),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
+                                          } catch (e) {
+                                            print(
+                                                'Error submitting review: $e');
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    'Error submitting review: $e'),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: Text('Submit'),
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          },
                           child: Text('Review'),
                         )
                       : SizedBox()

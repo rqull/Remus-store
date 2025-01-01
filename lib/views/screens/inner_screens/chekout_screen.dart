@@ -445,7 +445,7 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>  MainScreen(),
+                          builder: (context) => MainScreen(),
                         ),
                       );
                     } catch (e) {
