@@ -34,11 +34,13 @@ linter:
 analyzer:
   errors:
     # treat missing required parameters as a warning (not a hint)
+    depend_on_referenced_packages: ignore
     deprecated_member_use: ignore
     missing_required_param: warning
     # treat missing returns as a warning (not a hint)
     missing_return: warning
     # allow having TODOs in the code
+    prefer_interpolation_to_compose_strings: ignore
     todo: ignore
   exclude:
     - "**/*.g.dart"

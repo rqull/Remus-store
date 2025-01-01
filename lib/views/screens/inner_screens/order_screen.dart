@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'order_detail_screen.dart';
+
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
 
@@ -11,6 +13,9 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   final Stream<QuerySnapshot> _ordersStream = FirebaseFirestore.instance
       .collection('orders')
       .where('buyerId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
@@ -91,7 +96,17 @@ class _OrderScreenState extends State<OrderScreen> {
               child: CircularProgressIndicator(),
             );
           }
-
+          if (snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text(
+                'No orders found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }
           return ListView.builder(
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
@@ -102,7 +117,15 @@ class _OrderScreenState extends State<OrderScreen> {
                   vertical: 25,
                 ),
                 child: InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderDetailScreen(
+                            orderData: orderData,
+                          ),
+                        ));
+                  },
                   child: Container(
                     width: 335,
                     height: 153,
@@ -232,6 +255,63 @@ class _OrderScreenState extends State<OrderScreen> {
                                       ? Colors.purple
                                       : Colors.red,
                               borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned(
+                                  left: 9,
+                                  top: 3,
+                                  child: Text(
+                                    orderData['delivered'] == true
+                                        ? 'Delivered'
+                                        : orderData['processing'] == true
+                                            ? 'Processing'
+                                            : 'Cancelled',
+                                    style: GoogleFonts.lato(
+                                      textStyle: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 298,
+                          top: 115,
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: const BoxDecoration(),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned(
+                                  left: 0,
+                                  top: 0,
+                                  child: InkWell(
+                                    onTap: () async {
+                                      await _firestore
+                                          .collection('orders')
+                                          .doc(orderData.id)
+                                          .delete();
+                                    },
+                                    child: Image.asset(
+                                      'assets/icons/delete.png',
+                                      width: 20,
+                                      height: 20,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         )
