@@ -51,3 +51,4 @@ app.*.map.json
 /linux/
 firebase_options.dart
 .vscode/
+.env

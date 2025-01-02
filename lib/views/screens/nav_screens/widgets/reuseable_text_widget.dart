@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../stores_screen.dart';
+
 class ReuseableTextWidget extends StatelessWidget {
   final String title;
   final String subTitle;
@@ -25,14 +27,24 @@ class ReuseableTextWidget extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            subTitle,
-            style: GoogleFonts.roboto(
-              textStyle: TextStyle(
-                color: Colors.blue,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StoresScreen(),
+                ),
+              );
+            },
+            child: Text(
+              subTitle,
+              style: GoogleFonts.roboto(
+                textStyle: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
               ),
             ),
           ),

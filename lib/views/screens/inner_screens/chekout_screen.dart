@@ -403,6 +403,12 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
                             .doc(_auth.currentUser!.uid)
                             .get();
 
+                        // Get product data to get vendorId
+                        DocumentSnapshot productDoc = await _firestore
+                            .collection('products')
+                            .doc(item.productid)
+                            .get();
+
                         CollectionReference orderRef =
                             _firestore.collection('orders');
                         final orderId = const Uuid().v4();
@@ -427,8 +433,11 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
                           'fullname': (userDoc.data()
                               as Map<String, dynamic>)['fullname'],
                           'buyerId': _auth.currentUser!.uid,
+                          'vendorId': (productDoc.data()
+                              as Map<String, dynamic>)['vendorId'],
                           'deliveredCount': 0,
                           'delivered': false,
+                          'cancelled': false,
                           'processing': true,
                           'orderDate': DateTime.now(),
                         });

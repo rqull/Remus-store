@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mob3_uas_klp_04/controllers/auth_controller.dart';
 import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_screen.dart';
-import 'package:mob3_uas_klp_04/views/screens/main_screen.dart';
 
 import '../../../vendor/views/auth/vendor_register_screen.dart';
+import '../../controller/vendor_auth_controller.dart';
+import '../screens/main_vendor_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class VendorLoginScreen extends StatefulWidget {
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<VendorLoginScreen> createState() => _VendorLoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _VendorLoginScreenState extends State<VendorLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final AuthController _authController = AuthController();
+  final VendorAuthController _authController = VendorAuthController();
   bool _isLoading = false;
   bool _isPasswordVisibility = false;
 
@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Future.delayed(Duration.zero, () {
         Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (context) {
-            return MainScreen();
+            return const MainVendorScreen();
           },
         ));
 
@@ -140,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Login Your Account",
+                    "Login Vendor Account",
                     style: GoogleFonts.lato(
                         textStyle: TextStyle(
                       color: Color(0xFF0D120E),
