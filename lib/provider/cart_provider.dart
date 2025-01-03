@@ -29,6 +29,7 @@ class CartNotifier extends StateNotifier<Map<String, CartModels>> {
     required String productSize,
     required int discount,
     required String description,
+    required String vendorId,
   }) {
     // Jika produk sudah ada di chart, maka update quantity
     if (state.containsKey(productid)) {
@@ -46,6 +47,7 @@ class CartNotifier extends StateNotifier<Map<String, CartModels>> {
         productSize: state[productid]!.productSize,
         discount: state[productid]!.discount,
         description: state[productid]!.description,
+        vendorId: state[productid]!.vendorId,
       );
       // Update state
       state = updatedCart;
@@ -64,6 +66,7 @@ class CartNotifier extends StateNotifier<Map<String, CartModels>> {
         productSize: productSize,
         discount: discount,
         description: description,
+        vendorId: vendorId,
       );
       // Update state
       state = updatedCart;
@@ -97,6 +100,7 @@ class CartNotifier extends StateNotifier<Map<String, CartModels>> {
         productSize: state[productid]!.productSize,
         discount: state[productid]!.discount,
         description: state[productid]!.description,
+        vendorId: state[productid]!.vendorId,
       );
       // Update state
       state = updatedCart;
@@ -110,15 +114,16 @@ class CartNotifier extends StateNotifier<Map<String, CartModels>> {
       if (state[productid]!.quantity > 1) {
         updatedCart[productid] = CartModels(
           productName: state[productid]!.productName,
+          productPrice: state[productid]!.productPrice,
           categoryName: state[productid]!.categoryName,
           imageUrl: state[productid]!.imageUrl,
           quantity: state[productid]!.quantity - 1,
-          productPrice: state[productid]!.productPrice,
           instock: state[productid]!.instock,
           productid: state[productid]!.productid,
           productSize: state[productid]!.productSize,
           discount: state[productid]!.discount,
           description: state[productid]!.description,
+          vendorId: state[productid]!.vendorId,
         );
         state = updatedCart;
       } else {

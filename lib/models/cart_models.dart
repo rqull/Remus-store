@@ -9,6 +9,7 @@ class CartModels {
   final String productSize;
   final int discount;
   final String description;
+  final String vendorId;
 
   CartModels({
     required this.productName,
@@ -21,5 +22,6 @@ class CartModels {
     required this.productSize,
     required this.discount,
     required this.description,
+    required this.vendorId,
   });
 }

@@ -328,40 +328,23 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           onPressed: () {
             try {
               if (widget.productData != null) {
-                // Check if product is from vendor or admin
-                final isVendorProduct =
-                    widget.productData['isVendorProduct'] ?? false;
-                final vendorId = widget.productData['vendorId'];
+                // For admin products, vendorId will be empty
+                final vendorId = widget.productData['vendorId'] ?? '';
 
-                if (isVendorProduct && vendorId != null) {
-                  cartProviderData.addProductToCart(
-                    productName: widget.productData['productName'] ?? '',
-                    productPrice:
-                        (widget.productData['productPrice'] ?? 0.0).toDouble(),
-                    categoryName: widget.productData['category'] ?? '',
-                    imageUrl: widget.productData['productImages'] ?? [],
-                    quantity: 1,
-                    instock: widget.productData['quantity'] ?? 0,
-                    productid: widget.productData['productId'] ?? '',
-                    productSize: selectedSize,
-                    discount: widget.productData['discount'] ?? 0,
-                    description: widget.productData['description'] ?? '',
-                  );
-                } else {
-                  cartProviderData.addProductToCart(
-                    productName: widget.productData['productName'] ?? '',
-                    productPrice:
-                        (widget.productData['productPrice'] ?? 0.0).toDouble(),
-                    categoryName: widget.productData['category'] ?? '',
-                    imageUrl: widget.productData['productImages'] ?? [],
-                    quantity: 1,
-                    instock: widget.productData['quantity'] ?? 0,
-                    productid: widget.productData['productId'] ?? '',
-                    productSize: selectedSize,
-                    discount: widget.productData['discount'] ?? 0,
-                    description: widget.productData['description'] ?? '',
-                  );
-                }
+                cartProviderData.addProductToCart(
+                  productName: widget.productData['productName'] ?? '',
+                  productPrice:
+                      (widget.productData['productPrice'] ?? 0.0).toDouble(),
+                  categoryName: widget.productData['category'] ?? '',
+                  imageUrl: widget.productData['productImages'] ?? [],
+                  quantity: 1,
+                  instock: widget.productData['quantity'] ?? 0,
+                  productid: widget.productData['productId'] ?? '',
+                  productSize: selectedSize,
+                  discount: widget.productData['discount'] ?? 0,
+                  description: widget.productData['description'] ?? '',
+                  vendorId: vendorId, // Add vendorId parameter
+                );
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
