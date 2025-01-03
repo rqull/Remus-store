@@ -114,8 +114,6 @@ lib/
 <img src="https://i.ibb.co.com/bRxMnC1/Screenshot-1735907142.png" width="250">
 <img src="https://i.ibb.co.com/nzkP63C/Screenshot-1735907152.png" width="250">
 
-[Add admin panel screenshots here]
-
 </div>
 
 ## Features in Development
