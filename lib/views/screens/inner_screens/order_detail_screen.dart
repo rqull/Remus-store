@@ -389,7 +389,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                               'review': review,
                                               'timeStamp': Timestamp.now(),
                                             });
-                                            await updateProductRating(productId);
+                                            await updateProductRating(
+                                                productId);
                                             Navigator.of(context).pop();
                                             _reviewController.clear();
                                             rating = 0;
@@ -509,7 +510,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                               'review': review,
                                               'timeStamp': Timestamp.now(),
                                             });
-                                            await updateProductRating(productId);
+                                            await updateProductRating(
+                                                productId);
                                             Navigator.of(context).pop();
                                             _reviewController.clear();
                                             rating = 0;

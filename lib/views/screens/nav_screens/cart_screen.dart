@@ -3,8 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:uuid/uuid.dart';
 import '../../../provider/cart_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../inner_screens/chekout_screen.dart';
 import '../main_screen.dart';
@@ -17,6 +20,115 @@ class CartScreen extends ConsumerStatefulWidget {
 }
 
 class _CartScreenState extends ConsumerState<CartScreen> {
+  final _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+
+  Future<void> _placeOrder() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get user's current balance
+      final userDoc = await _firestore.collection('buyers').doc(user.uid).get();
+      double currentBalance = (userDoc.data()?['balance'] ?? 0).toDouble();
+      double totalAmount = ref.read(cartProvider.notifier).getTotalPrice();
+
+      // Check if user has enough balance
+      if (currentBalance < totalAmount) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Insufficient balance. Please top up.')),
+        );
+        return;
+      }
+
+      // Start a batch write
+      WriteBatch batch = _firestore.batch();
+
+      // Update user's balance
+      batch.update(
+        _firestore.collection('buyers').doc(user.uid),
+        {'balance': FieldValue.increment(-totalAmount)},
+      );
+
+      // Create transaction record
+      DocumentReference transactionRef =
+          _firestore.collection('transactions').doc();
+      batch.set(transactionRef, {
+        'userId': user.uid,
+        'type': 'purchase',
+        'amount': -totalAmount,
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'success'
+      });
+
+      // Create orders for each cart item
+      final cartData = ref.read(cartProvider);
+      for (var item in cartData.values) {
+        String orderId = const Uuid().v4();
+
+        // Get product data to get vendorId
+        final productDoc =
+            await _firestore.collection('products').doc(item.productid).get();
+        final vendorId = productDoc.data()?['vendorId'] as String? ?? '';
+
+        batch.set(_firestore.collection('orders').doc(orderId), {
+          'orderId': orderId,
+          'userId': user.uid,
+          'vendorId': vendorId,
+          'productId': item.productid,
+          'productName': item.productName,
+          'productImage': item.imageUrl[0],
+          'productSize': item.productSize,
+          'productPrice': item.productPrice,
+          'quantity': item.quantity,
+          'orderDate': Timestamp.now(),
+          'delivered': false,
+          'processing': true,
+          'cancelled': false,
+        });
+
+        // Delete the cart item
+        batch.delete(_firestore
+            .collection('cart')
+            .doc(user.uid)
+            .collection('cartItems')
+            .doc(item.productid));
+      }
+
+      // Commit the batch
+      await batch.commit();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Order placed successfully')),
+      );
+
+      ref.read(cartProvider.notifier).clearCart();
+
+      await Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MainScreen(),
+        ),
+      );
+    } catch (e) {
+      print('Error placing order: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to place order: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartData = ref.watch(cartProvider);
@@ -356,11 +468,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             Align(
               alignment: const Alignment(0.83, -1),
               child: InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const ChekoutScreen();
-                  }));
-                },
+                onTap: _isLoading
+                    ? null
+                    : () {
+                        _placeOrder();
+                      },
                 child: Container(
                   width: 166,
                   height: 71,

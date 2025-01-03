@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class ErningScreen extends StatefulWidget {
@@ -13,79 +14,59 @@ class ErningScreen extends StatefulWidget {
 class _ErningScreenState extends State<ErningScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _vendorId = FirebaseAuth.instance.currentUser!.uid;
-  DateTime _selectedDate = DateTime.now();
   String _selectedPeriod = 'Daily';
   final List<String> _periods = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
+  DateTime _selectedDate = DateTime.now();
 
   Future<Map<String, dynamic>> _getEarnings() async {
     try {
-      DateTime startDate;
-      DateTime endDate = DateTime.now();
-
-      switch (_selectedPeriod) {
-        case 'Daily':
-          startDate = DateTime(_selectedDate.year, _selectedDate.month,
-              _selectedDate.day, 0, 0, 0);
-          endDate = DateTime(_selectedDate.year, _selectedDate.month,
-              _selectedDate.day, 23, 59, 59);
-          break;
-        case 'Weekly':
-          startDate =
-              _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
-          endDate = startDate.add(const Duration(days: 6));
-          break;
-        case 'Monthly':
-          startDate = DateTime(_selectedDate.year, _selectedDate.month, 1);
-          endDate = DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
-          break;
-        case 'Yearly':
-          startDate = DateTime(_selectedDate.year, 1, 1);
-          endDate = DateTime(_selectedDate.year, 12, 31);
-          break;
-        default:
-          startDate = _selectedDate;
-      }
-
       final QuerySnapshot orders = await _firestore
           .collection('orders')
           .where('vendorId', isEqualTo: _vendorId)
-          .where('orderDate', isGreaterThanOrEqualTo: startDate)
-          .where('orderDate', isLessThanOrEqualTo: endDate)
           .get();
 
       double totalEarnings = 0;
       int totalOrders = orders.docs.length;
-      int completedOrders = 0;
-      int pendingOrders = 0;
-      int cancelledOrders = 0;
+      int delivered = 0;
+      int processing = 0;
+      int cancelled = 0;
 
       for (var doc in orders.docs) {
         final data = doc.data() as Map<String, dynamic>;
-        if (data['status'] == 'Completed') {
-          totalEarnings += (data['totalAmount'] ?? 0).toDouble();
-          completedOrders++;
-        } else if (data['status'] == 'Pending') {
-          pendingOrders++;
-        } else if (data['status'] == 'Cancelled') {
-          cancelledOrders++;
+        print(
+            'Order ${doc.id}: delivered=${data['delivered']}, processing=${data['processing']}, cancelled=${data['cancelled']}, price=${data['productPrice']}');
+
+        if (data['delivered'] == true) {
+          totalEarnings += (data['productPrice'] ?? 0).toDouble();
+          delivered++;
+        } else if (data['processing'] == true) {
+          processing++;
+        } else if (data['cancelled'] == true) {
+          cancelled++;
         }
       }
+
+      print('Total Orders: $totalOrders');
+      print('Total Earnings: $totalEarnings');
+      print('Delivered: $delivered');
+      print('Processing: $processing');
+      print('Cancelled: $cancelled');
 
       return {
         'totalEarnings': totalEarnings,
         'totalOrders': totalOrders,
-        'completedOrders': completedOrders,
-        'pendingOrders': pendingOrders,
-        'cancelledOrders': cancelledOrders,
+        'delivered': delivered,
+        'processing': processing,
+        'cancelled': cancelled,
       };
     } catch (e) {
       print('Error getting earnings: $e');
       return {
         'totalEarnings': 0,
         'totalOrders': 0,
-        'completedOrders': 0,
-        'pendingOrders': 0,
-        'cancelledOrders': 0,
+        'delivered': 0,
+        'processing': 0,
+        'cancelled': 0,
       };
     }
   }
@@ -94,7 +75,16 @@ class _ErningScreenState extends State<ErningScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Earnings'),
+        title: Text(
+          'Earnings',
+          style: GoogleFonts.poppins(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
           PopupMenuButton<String>(
             onSelected: (String value) {
@@ -110,148 +100,165 @@ class _ErningScreenState extends State<ErningScreen> {
                 );
               }).toList();
             },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Text(_selectedPeriod),
-                  const Icon(Icons.arrow_drop_down),
-                ],
-              ),
-            ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Date Selector
-          CalendarDatePicker(
-            initialDate: _selectedDate,
-            firstDate: DateTime(2020),
-            lastDate: DateTime.now(),
-            onDateChanged: (DateTime value) {
-              setState(() {
-                _selectedDate = value;
-              });
-            },
-          ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _getEarnings(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // Earnings Stats
-          Expanded(
-            child: FutureBuilder<Map<String, dynamic>>(
-              future: _getEarnings(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
 
-                if (snapshot.hasError) {
-                  return Center(
-                      child: Text('Error: ${snapshot.error.toString()}'));
-                }
+          final data = snapshot.data!;
 
-                final data = snapshot.data!;
-                final formatter =
-                    NumberFormat.currency(locale: 'en_US', symbol: '\$');
-
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      // Total Earnings Card
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              const Text(
-                                'Total Earnings',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                formatter.format(data['totalEarnings']),
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Orders Statistics
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Total Orders',
-                              data['totalOrders'].toString(),
-                              Colors.blue,
-                            ),
-                          ),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Completed',
-                              data['completedOrders'].toString(),
-                              Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Pending',
-                              data['pendingOrders'].toString(),
-                              Colors.orange,
-                            ),
-                          ),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Cancelled',
-                              data['cancelledOrders'].toString(),
-                              Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Period: $_selectedPeriod',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 20),
+                _buildEarningsCard(
+                  'Total Earnings',
+                  NumberFormat.currency(symbol: '\$')
+                      .format(data['totalEarnings']),
+                  Icons.attach_money,
+                  Colors.green,
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        'Total Orders',
+                        data['totalOrders'].toString(),
+                        Icons.shopping_cart,
+                        Colors.blue,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatCard(
+                        'Delivered',
+                        data['delivered'].toString(),
+                        Icons.check_circle,
+                        Color(0xFF3C55EF),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        'Processing',
+                        data['processing'].toString(),
+                        Icons.pending,
+                        Colors.purple,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatCard(
+                        'Cancelled',
+                        data['cancelled'].toString(),
+                        Icons.cancel,
+                        Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, Color color) {
+  Widget _buildEarningsCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 30),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: color,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: color,

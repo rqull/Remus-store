@@ -409,6 +409,13 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
                             .doc(item.productid)
                             .get();
 
+                        // Debug log for vendorId
+                        final vendorId = (productDoc.data()
+                            as Map<String, dynamic>)['vendorId'];
+                        print('Creating order with vendorId: $vendorId');
+                        print('Product ID: ${item.productid}');
+                        print('Product Data: ${productDoc.data()}');
+
                         CollectionReference orderRef =
                             _firestore.collection('orders');
                         final orderId = const Uuid().v4();

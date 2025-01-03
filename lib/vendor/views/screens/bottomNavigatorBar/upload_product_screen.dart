@@ -144,8 +144,13 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
 
     try {
       final List<String> productImages = await _uploadProductImagesToSupabase();
+
+      // Debug log for vendor ID
+      final vendorId = FirebaseAuth.instance.currentUser!.uid;
+      print('Uploading product with vendorId: $vendorId');
+
       final docRef = await _firestore.collection('products').add({
-        'vendorId': FirebaseAuth.instance.currentUser!.uid,
+        'vendorId': vendorId,
         'productName': _productNameController.text,
         'productPrice': double.parse(_productPriceController.text),
         'description': _productDescriptionController.text,

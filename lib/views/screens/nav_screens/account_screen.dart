@@ -5,9 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../authentification_screens/login_screen.dart';
 import '../inner_screens/order_screen.dart';
+import '../inner_screens/top_up_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -22,7 +24,11 @@ class _AccountScreenState extends State<AccountScreen> {
   String? _fullName;
   String? _email;
   String? _profileImageUrl;
-  bool _isLoading = false;
+  String? _city;
+  String? _locality;
+  String? _state;
+  double _balance = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -31,18 +37,34 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final user = _auth.currentUser;
-    if (user != null) {
-      final userData =
-          await _firestore.collection('buyers').doc(user.uid).get();
+    setState(() {
+      _isLoading = true;
+    });
 
-      if (userData.exists) {
-        setState(() {
-          _fullName = userData.data()?['fullname'];
-          _email = userData.data()?['email'];
-          _profileImageUrl = userData.data()?['profilImage'];
-        });
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final userData =
+            await _firestore.collection('buyers').doc(user.uid).get();
+
+        if (userData.exists) {
+          setState(() {
+            _fullName = userData.data()?['fullname'];
+            _email = userData.data()?['email'];
+            _profileImageUrl = userData.data()?['profilImage'];
+            _city = userData.data()?['city'];
+            _locality = userData.data()?['locality'];
+            _state = userData.data()?['state'];
+            _balance = (userData.data()?['balance'] ?? 0).toDouble();
+          });
+        }
       }
+    } catch (e) {
+      print('Error loading user data: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -217,6 +239,41 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
             ),
             SizedBox(height: 32),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Balance',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      NumberFormat.currency(
+                        locale: 'en_US',
+                        symbol: '\$',
+                        decimalDigits: 2,
+                      ).format(_balance),
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3C55EF),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             ListTile(
               leading:
                   Icon(Icons.shopping_bag_outlined, color: Color(0xFF103DE5)),
@@ -232,6 +289,25 @@ class _AccountScreenState extends State<AccountScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => OrderScreen()),
+                );
+              },
+            ),
+            Divider(),
+            SizedBox(height: 10),
+            ListTile(
+              leading: Icon(Icons.payment, color: Color(0xFF103DE5)),
+              title: Text(
+                'Top up',
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TopUpScreen()),
                 );
               },
             ),

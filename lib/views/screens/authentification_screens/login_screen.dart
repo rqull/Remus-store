@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mob3_uas_klp_04/controllers/auth_controller.dart';
 import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_screen.dart';
 import 'package:mob3_uas_klp_04/views/screens/main_screen.dart';
-
+import 'package:mob3_uas_klp_04/vendor/views/screens/main_vendor_screen.dart';
 import '../../../vendor/views/auth/vendor_register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,19 +24,30 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = true;
     });
-    String res = await _authController.loginUser(email, password);
 
-    if (res == 'success') {
-      // go to the main screen
+    Map<String, dynamic> res = await _authController.loginUser(email, password);
+
+    if (res['status'] == 'success') {
+      String role = res['role'];
+
       Future.delayed(Duration.zero, () {
-        Navigator.pushReplacement(context, MaterialPageRoute(
-          builder: (context) {
-            return MainScreen();
-          },
-        ));
+        // Navigate based on role
+        if (role == 'vendor') {
+          Navigator.pushReplacement(context, MaterialPageRoute(
+            builder: (context) {
+              return const MainVendorScreen();
+            },
+          ));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(
+            builder: (context) {
+              return MainScreen();
+            },
+          ));
+        }
 
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Logged in')));
+            .showSnackBar(SnackBar(content: Text('Logged in as $role')));
       });
     } else {
       setState(() {
@@ -44,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       Future.delayed(Duration.zero, () {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(res)));
+            .showSnackBar(SnackBar(content: Text(res['message'])));
       });
     }
   }
@@ -103,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             isLoading = true;
                           });
 
-                          String res =
+                          String result =
                               await _authController.resetPassword(resetEmail);
 
                           setState(() {
@@ -113,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pop(context);
 
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(res)),
+                            SnackBar(content: Text(result)),
                           );
                         },
                   child: Text('Reset Password'),

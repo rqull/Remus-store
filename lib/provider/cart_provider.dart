@@ -12,6 +12,11 @@ class CartNotifier extends StateNotifier<Map<String, CartModels>> {
   // Konstruktor CartNotifier
   CartNotifier() : super({});
 
+  // Method to clear the entire cart
+  void clearCart() {
+    state = {};
+  }
+
   // Fungsi untuk menambahkan produk ke chart
   void addProductToCart({
     required String productName,

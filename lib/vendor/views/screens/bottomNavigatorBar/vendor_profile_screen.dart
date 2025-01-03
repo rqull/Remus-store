@@ -25,11 +25,61 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
   String? _locality;
   String? _state;
   bool _isLoading = false;
+  Map<String, dynamic> _orderStats = {
+    'totalOrders': 0,
+    'delivered': 0,
+    'processing': 0,
+    'cancelled': 0,
+  };
 
   @override
   void initState() {
     super.initState();
     _loadVendorData();
+    _loadOrderStats();
+  }
+
+  Future<void> _loadOrderStats() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final QuerySnapshot orders = await _firestore
+          .collection('orders')
+          .where('vendorId', isEqualTo: user.uid)
+          .get();
+
+      int totalOrders = orders.docs.length;
+      int delivered = 0;
+      int processing = 0;
+      int cancelled = 0;
+
+      for (var doc in orders.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        print(
+            'Order ${doc.id}: delivered=${data['delivered']}, processing=${data['processing']}, cancelled=${data['cancelled']}');
+
+        if (data['delivered'] == true) {
+          delivered++;
+        } else if (data['processing'] == true) {
+          processing++;
+        } else if (data['cancelled'] == true) {
+          cancelled++;
+        }
+      }
+
+      print('Total Orders: $totalOrders');
+      print('Delivered: $delivered');
+      print('Processing: $processing');
+      print('Cancelled: $cancelled');
+
+      setState(() {
+        _orderStats = {
+          'totalOrders': totalOrders,
+          'delivered': delivered,
+          'processing': processing,
+          'cancelled': cancelled,
+        };
+      });
+    }
   }
 
   Future<void> _loadVendorData() async {
@@ -70,28 +120,29 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
         final user = _auth.currentUser;
 
         if (user != null) {
-          // Upload to Supabase
           final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final path = 'store_images/${user.uid}/$fileName';
+
           final storageResponse =
-              await supabase.storage.from('storeImages').upload(
-                    'store_images/${user.uid}/$fileName',
-                    file,
-                    fileOptions: const FileOptions(
-                      cacheControl: '3600',
-                      upsert: false,
-                    ),
-                  );
+              await supabase.storage.from('storeImages').upload(path, file,
+                  fileOptions: const FileOptions(
+                    cacheControl: '3600',
+                    upsert: false,
+                  ));
 
           if (storageResponse.isEmpty) {
             throw Exception('Failed to upload image');
           }
 
-          // Get public URL
-          final imageUrl = supabase.storage
-              .from('storeImages')
-              .getPublicUrl('store_images/${user.uid}/$fileName');
+          final imageUrl =
+              supabase.storage.from('storeImages').getPublicUrl(path);
 
-          // Update Firestore
+          print('Image URL: $imageUrl');
+
+          if (imageUrl.isEmpty) {
+            throw Exception('Failed to get image URL');
+          }
+
           await _firestore
               .collection('vendors')
               .doc(user.uid)
@@ -102,13 +153,14 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Store image updated successfully')),
+            SnackBar(content: Text('Profile image updated successfully')),
           );
         }
       }
     } catch (e) {
+      print('Error uploading image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update store image: $e')),
+        SnackBar(content: Text('Error uploading image: $e')),
       );
     } finally {
       setState(() {
@@ -117,284 +169,203 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
     }
   }
 
-  Future<void> _signOut() async {
-    try {
-      await _auth.signOut();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to sign out: $e')),
-      );
-    }
-  }
-
-  Widget _buildStatItem({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: Color(0xFF103DE5),
-          size: 28,
-        ),
-        SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.nunitoSans(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF103DE5),
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          label,
-          style: GoogleFonts.nunitoSans(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         title: Text(
           'Store Profile',
-          style: GoogleFonts.nunitoSans(
-            color: Color(0xFF103DE5),
+          style: GoogleFonts.poppins(
+            color: Colors.black,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () async {
+              await _auth.signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Color(0xFF103DE5),
-                      width: 2,
-                    ),
+            Center(
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage: _storeImage != null &&
+                            _storeImage!.isNotEmpty &&
+                            _storeImage!.startsWith('http')
+                        ? CachedNetworkImageProvider(_storeImage!)
+                        : null,
+                    child: _storeImage == null ||
+                            _storeImage!.isEmpty ||
+                            !_storeImage!.startsWith('http')
+                        ? Icon(Icons.store, size: 60, color: Colors.grey[400])
+                        : null,
                   ),
-                  child: _isLoading
-                      ? CircularProgressIndicator()
-                      : ClipOval(
-                          child: _storeImage != null
-                              ? CachedNetworkImage(
-                                  imageUrl: _storeImage!,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) =>
-                                      CircularProgressIndicator(),
-                                  errorWidget: (context, url, error) => Icon(
-                                      Icons.store,
-                                      size: 60,
-                                      color: Colors.grey),
-                                )
-                              : Icon(Icons.store, size: 60, color: Colors.grey),
-                        ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Color(0xFF103DE5),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      radius: 20,
+                      child: IconButton(
+                        icon: _isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : const Icon(Icons.camera_alt, color: Colors.white),
+                        onPressed: _isLoading ? null : _pickAndUploadImage,
                       ),
                     ),
-                    child: IconButton(
-                      icon:
-                          Icon(Icons.camera_alt, size: 20, color: Colors.white),
-                      onPressed: _isLoading ? null : _pickAndUploadImage,
-                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildInfoCard('Store Name', _storeName ?? 'Not set'),
+            const SizedBox(height: 12),
+            _buildInfoCard('Email', _email ?? 'Not set'),
+            const SizedBox(height: 12),
+            _buildInfoCard('Location',
+                '${_locality ?? ''}, ${_city ?? ''}, ${_state ?? 'Not set'}'),
+            const SizedBox(height: 24),
+            Text(
+              'Order Statistics',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Orders',
+                    _orderStats['totalOrders'].toString(),
+                    Icons.shopping_cart,
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'Delivered',
+                    _orderStats['delivered'].toString(),
+                    Icons.check_circle,
+                    Color(0xFF3C55EF),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 24),
-            Text(
-              _storeName ?? 'Loading...',
-              style: GoogleFonts.nunitoSans(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Processing',
+                    _orderStats['processing'].toString(),
+                    Icons.pending,
+                    Colors.purple,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'Cancelled',
+                    _orderStats['cancelled'].toString(),
+                    Icons.cancel,
+                    Colors.red,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Text(
-              _email ?? 'Loading...',
-              style: GoogleFonts.nunitoSans(
-                fontSize: 16,
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
                 color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Store Location',
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    ListTile(
-                      leading:
-                          Icon(Icons.location_city, color: Color(0xFF103DE5)),
-                      title: Text(_city ?? 'Loading...'),
-                      subtitle: Text('City'),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.place, color: Color(0xFF103DE5)),
-                      title: Text(_locality ?? 'Loading...'),
-                      subtitle: Text('Locality'),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.map, color: Color(0xFF103DE5)),
-                      title: Text(_state ?? 'Loading...'),
-                      subtitle: Text('State'),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Store Statistics',
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: _firestore
-                          .collection('products')
-                          .where('vendorId', isEqualTo: _auth.currentUser?.uid)
-                          .snapshots(),
-                      builder: (context, productSnapshot) {
-                        if (productSnapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        }
+          ],
+        ),
+      ),
+    );
+  }
 
-                        if (productSnapshot.hasError) {
-                          return Text('Error: ${productSnapshot.error}');
-                        }
-
-                        return StreamBuilder<QuerySnapshot>(
-                          stream: _firestore
-                              .collection('orders')
-                              .where('vendorId',
-                                  isEqualTo: _auth.currentUser?.uid)
-                              .snapshots(),
-                          builder: (context, orderSnapshot) {
-                            if (orderSnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
-                            }
-
-                            if (orderSnapshot.hasError) {
-                              return Text('Error: ${orderSnapshot.error}');
-                            }
-
-                            final productCount =
-                                productSnapshot.data?.docs.length ?? 0;
-                            final orders = orderSnapshot.data?.docs ?? [];
-
-                            // Calculate total earnings
-                            double totalEarnings = 0;
-                            int totalOrders = 0;
-                            for (var order in orders) {
-                              final data = order.data() as Map<String, dynamic>;
-                              if (data['orderStatus'] == 'Delivered') {
-                                totalOrders++;
-                                final productPrice =
-                                    (data['productPrice'] ?? 0).toDouble();
-                                final productQuantity =
-                                    (data['quantity'] ?? 0).toInt();
-                                totalEarnings +=
-                                    (productPrice * productQuantity);
-                              }
-                            }
-
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildStatItem(
-                                  icon: Icons.shopping_bag,
-                                  label: 'Products',
-                                  value: productCount.toString(),
-                                ),
-                                _buildStatItem(
-                                  icon: Icons.shopping_cart,
-                                  label: 'Orders',
-                                  value: totalOrders.toString(),
-                                ),
-                                _buildStatItem(
-                                  icon: Icons.attach_money,
-                                  label: 'Earnings',
-                                  value:
-                                      '\$${totalEarnings.toStringAsFixed(0)}',
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
+              ],
             ),
-            SizedBox(height: 24),
-            ListTile(
-              leading: Icon(Icons.exit_to_app, color: Colors.red),
-              title: Text(
-                'Logout',
-                style: GoogleFonts.nunitoSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red,
-                ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
-              onTap: _signOut,
             ),
           ],
         ),
