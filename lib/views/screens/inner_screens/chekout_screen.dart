@@ -383,8 +383,8 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
             )
           : Padding(
               padding: const EdgeInsets.all(10.0),
-              child: InkWell(
-                onTap: () async {
+              child: ElevatedButton(
+                onPressed: () async {
                   if (_selectedPaymentMethod == 'Stripe') {
                     // Stripe payment
                   } else {
@@ -478,28 +478,21 @@ class _ChekoutScreenState extends ConsumerState<ChekoutScreen> {
                     }
                   }
                 },
-                child: Container(
-                  height: 50,
-                  width: MediaQuery.of(context).size.width - 50,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color(0xFF1532E7),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1532E7),
+                  minimumSize: Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  child: Center(
-                    child: isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : const Text(
-                            'Place Order',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              height: 1.4,
-                              fontSize: 18,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                ),
+                child: Text(
+                  isLoading ? 'Processing...' : 'Confirm Order',
+                  style: GoogleFonts.lato(
+                    textStyle: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),

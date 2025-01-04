@@ -470,8 +470,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               child: InkWell(
                 onTap: _isLoading
                     ? null
-                    : () {
-                        _placeOrder();
+                    : () async {
+                        // Navigate to checkout screen first
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChekoutScreen(),
+                          ),
+                        );
+
+                        // Only place order if checkout was confirmed
+                        if (result == true) {
+                          await _placeOrder();
+                        }
                       },
                 child: Container(
                   width: 166,

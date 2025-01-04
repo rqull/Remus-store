@@ -6,6 +6,7 @@ import 'bottomNavigatorBar/erning_screen.dart';
 import 'bottomNavigatorBar/vendor_orders_screen.dart';
 import 'bottomNavigatorBar/upload_product_screen.dart';
 import 'bottomNavigatorBar/vendor_profile_screen.dart';
+import 'bottomNavigatorBar/withdrawal_screen.dart';
 
 class MainVendorScreen extends StatefulWidget {
   const MainVendorScreen({super.key});
@@ -22,6 +23,7 @@ class _MainVendorScreenState extends State<MainVendorScreen> {
     UploadProductScreen(),
     EditProductScreen(),
     VendorProfileScreen(),
+    VendorWithdrawalScreen(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,8 @@ class _MainVendorScreenState extends State<MainVendorScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Edit'),
           BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet), label: 'Withdrawal'),
         ],
       ),
     );

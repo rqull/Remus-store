@@ -16,16 +16,15 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Stream<QuerySnapshot> get _ordersStream {
-    // Print current vendor ID for debugging
-    print('Current Vendor ID: ${_auth.currentUser?.uid}');
-
     return _firestore
         .collection('orders')
         .where('vendorId', isEqualTo: _auth.currentUser?.uid)
         .snapshots();
   }
 
-  Future<String> _getBuyerName(String buyerId) async {
+  Future<String> _getBuyerName(String? buyerId) async {
+    if (buyerId == null) return 'Unknown Buyer';
+
     try {
       DocumentSnapshot buyerDoc =
           await _firestore.collection('buyers').doc(buyerId).get();
@@ -36,8 +35,23 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
       }
       return 'Unknown Buyer';
     } catch (e) {
+      print('Error fetching buyer name: $e');
       return 'Unknown Buyer';
     }
+  }
+
+  String _getOrderStatus(Map<String, dynamic> orderData) {
+    if (orderData['cancelled'] == true) return 'Cancelled';
+    if (orderData['delivered'] == true) return 'Delivered';
+    if (orderData['processing'] == true) return 'Processing';
+    return 'Pending';
+  }
+
+  Color _getStatusColor(Map<String, dynamic> orderData) {
+    if (orderData['cancelled'] == true) return Colors.red;
+    if (orderData['delivered'] == true) return Color(0xFF3C55EF);
+    if (orderData['processing'] == true) return Colors.purple;
+    return Colors.orange;
   }
 
   @override
@@ -59,17 +73,6 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
       body: StreamBuilder<QuerySnapshot>(
         stream: _ordersStream,
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          // Print snapshot data for debugging
-          print('Connection State: ${snapshot.connectionState}');
-          print('Has Error: ${snapshot.hasError}');
-          if (snapshot.hasError) print('Error: ${snapshot.error}');
-          if (snapshot.hasData) {
-            print('Number of documents: ${snapshot.data!.docs.length}');
-            snapshot.data!.docs.forEach((doc) {
-              print('Order Data: ${doc.data()}');
-            });
-          }
-
           if (snapshot.hasError) {
             return Center(
               child: Text(
@@ -110,8 +113,10 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final orderData = orders[index].data() as Map<String, dynamic>;
+              final orderId = orders[index].id;
+
               return FutureBuilder<String>(
-                future: _getBuyerName(orderData['buyerId']),
+                future: _getBuyerName(orderData['buyerId'] as String?),
                 builder: (context, buyerSnapshot) {
                   final buyerName = buyerSnapshot.data ?? 'Loading...';
 
@@ -129,7 +134,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.network(
-                              orderData['productImage'],
+                              orderData['productImage'] ?? '',
                               width: 80,
                               height: 80,
                               fit: BoxFit.cover,
@@ -148,7 +153,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  orderData['productName'],
+                                  orderData['productName'] ?? 'Unknown Product',
                                   style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -156,7 +161,7 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Size: ${orderData['productSize']}',
+                                  'Size: ${orderData['productSize'] ?? 'N/A'}',
                                   style: GoogleFonts.poppins(
                                     color: Colors.grey[600],
                                   ),
@@ -170,122 +175,136 @@ class _VendorOrdersScreenState extends State<VendorOrdersScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Price: \$${orderData['productPrice']}',
+                                  'Price: \$${orderData['productPrice']?.toString() ?? '0.00'}',
                                   style: GoogleFonts.poppins(
                                     color: Colors.blue,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
-                                  'Address: ${orderData['state']}, ${orderData['city']}, ${orderData['locality']}',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
+                                if (orderData['state'] != null &&
+                                    orderData['city'] != null &&
+                                    orderData['locality'] != null)
+                                  Text(
+                                    'Address: ${orderData['state']}, ${orderData['city']}, ${orderData['locality']}',
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-                                Text('Status :'),
+                                const Text('Status:'),
                                 const SizedBox(height: 8),
                                 Container(
                                   width: 77,
                                   height: 25,
                                   clipBehavior: Clip.antiAlias,
                                   decoration: BoxDecoration(
-                                    color: orderData['delivered'] == true
-                                        ? Color(0xFF3C55EF)
-                                        : orderData['processing'] == true
-                                            ? Colors.purple
-                                            : Colors.red,
+                                    color: _getStatusColor(orderData),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: Stack(
-                                    clipBehavior: Clip.none,
-                                    children: [
-                                      Positioned(
-                                        left: 9,
-                                        top: 3,
-                                        child: Text(
-                                          orderData['delivered'] == true
-                                              ? 'Delivered'
-                                              : orderData['processing'] == true
-                                                  ? 'Processing'
-                                                  : 'Cancelled',
-                                          style: GoogleFonts.lato(
-                                            textStyle: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              height: 1.3,
+                                  child: Center(
+                                    child: Text(
+                                      _getOrderStatus(orderData),
+                                      style: GoogleFonts.lato(
+                                        textStyle: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                if (orderData['cancelled'] != true)
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        if (orderData['delivered'] != true)
+                                          ElevatedButton(
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  MaterialStateProperty.all(
+                                                Color(0xFF3C55EF),
+                                              ),
+                                            ),
+                                            onPressed: () async {
+                                              try {
+                                                await _firestore
+                                                    .collection('orders')
+                                                    .doc(orderId)
+                                                    .update({
+                                                  'delivered': true,
+                                                  'processing': false,
+                                                  'cancelled': false,
+                                                  'deliveredCount':
+                                                      FieldValue.increment(1),
+                                                });
+                                              } catch (e) {
+                                                print(
+                                                    'Error updating order: $e');
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                        'Failed to update order status'),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            child: const Text(
+                                              'Mark Delivered',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      ElevatedButton(
-                                        style: ButtonStyle(
-                                            backgroundColor:
-                                                WidgetStatePropertyAll(
-                                          Color(0xFF3C55EF),
-                                        )),
-                                        onPressed: () async {
-                                          await _firestore
-                                              .collection('orders')
-                                              .doc(orderData['orderId'])
-                                              .update({
-                                            'delivered': true,
-                                            'processing': false,
-                                            'deliveredCount':
-                                                FieldValue.increment(1),
-                                          });
-                                        },
-                                        child: orderData['delivered'] == true
-                                            ? const Text(
-                                                'Delivered',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                ),
-                                              )
-                                            : const Text(
-                                                'Mark Delivered',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                ),
+                                        const SizedBox(width: 8),
+                                        if (orderData['delivered'] != true)
+                                          ElevatedButton(
+                                            style: ButtonStyle(
+                                              backgroundColor:
+                                                  MaterialStateProperty.all(
+                                                Colors.red,
                                               ),
-                                      ),
-                                      ElevatedButton(
-                                        style: const ButtonStyle(
-                                            backgroundColor:
-                                                WidgetStatePropertyAll(
-                                          Colors.red,
-                                        )),
-                                        onPressed: () async {
-                                          await _firestore
-                                              .collection('orders')
-                                              .doc(orderData['orderId'])
-                                              .update({
-                                            'delivered': false,
-                                            'processing': false,
-                                            'cancelled': true,
-                                          });
-                                        },
-                                        child: const Text(
-                                          'Cancel',
-                                          style: TextStyle(
-                                            color: Colors.white,
+                                            ),
+                                            onPressed: () async {
+                                              try {
+                                                await _firestore
+                                                    .collection('orders')
+                                                    .doc(orderId)
+                                                    .update({
+                                                  'delivered': false,
+                                                  'processing': false,
+                                                  'cancelled': true,
+                                                });
+                                              } catch (e) {
+                                                print(
+                                                    'Error cancelling order: $e');
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                        'Failed to cancel order'),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            child: const Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
