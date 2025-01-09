@@ -7,7 +7,6 @@ import 'package:mob3_uas_klp_04/controllers/category_controller.dart';
 import 'package:mob3_uas_klp_04/views/screens/authentification_screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '.env/anon_key.dart';
 import 'firebase_options.dart';
 import 'vendor/views/auth/vendor_login_screen.dart';

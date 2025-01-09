@@ -48,7 +48,7 @@ class _StoresScreenState extends State<StoresScreen> {
           style: GoogleFonts.nunitoSans(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF103DE5),
+            color: const Color(0xFF103DE5),
           ),
         ),
         centerTitle: true,
@@ -67,13 +67,13 @@ class _StoresScreenState extends State<StoresScreen> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return Center(
+                  return const Center(
                     child: Text('Something went wrong'),
                   );
                 }
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
@@ -88,12 +88,12 @@ class _StoresScreenState extends State<StoresScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.search_off,
                           size: 64,
                           color: Colors.grey,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           'No products found',
                           style: GoogleFonts.nunitoSans(
@@ -107,8 +107,8 @@ class _StoresScreenState extends State<StoresScreen> {
                 }
 
                 return GridView.builder(
-                  padding: EdgeInsets.all(16),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 0.65,
                     mainAxisSpacing: 16,
