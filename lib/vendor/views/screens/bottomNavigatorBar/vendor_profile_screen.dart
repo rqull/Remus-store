@@ -102,70 +102,55 @@ class _VendorProfileScreenState extends State<VendorProfileScreen> {
   }
 
   Future<void> _pickAndUploadImage() async {
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 500,
-        maxHeight: 500,
-        imageQuality: 75,
+        imageQuality: null, // Don't compress PNG images
       );
 
-      if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        final user = _auth.currentUser;
+      if (image == null) return;
 
-        if (user != null) {
-          final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-          final path = 'store_images/${user.uid}/$fileName';
+      // Check if image is PNG
+      bool isPNG = image.path.toLowerCase().endsWith('.png');
 
-          final storageResponse =
-              await supabase.storage.from('storeImages').upload(path, file,
-                  fileOptions: const FileOptions(
-                    cacheControl: '3600',
-                    upsert: false,
-                  ));
+      // Create file reference
+      final file = File(image.path);
 
-          if (storageResponse.isEmpty) {
-            throw Exception('Failed to upload image');
-          }
+      // Generate unique file name with correct extension
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final extension = isPNG ? '.png' : '.jpg';
+      final fileName = 'vendor_${_auth.currentUser!.uid}_$timestamp$extension';
 
-          final imageUrl =
-              supabase.storage.from('storeImages').getPublicUrl(path);
+      // Upload to Supabase
+      final response =
+          await supabase.storage.from('vendors').upload(fileName, file);
 
-          print('Image URL: $imageUrl');
-
-          if (imageUrl.isEmpty) {
-            throw Exception('Failed to get image URL');
-          }
-
-          await _firestore
-              .collection('vendors')
-              .doc(user.uid)
-              .update({'storeImage': imageUrl});
-
-          setState(() {
-            _storeImage = imageUrl;
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Profile image updated successfully')),
-          );
-        }
+      if (response.isEmpty) {
+        throw Exception('Failed to upload image');
       }
+
+      // Get the public URL
+      final imageUrl = supabase.storage.from('vendors').getPublicUrl(fileName);
+
+      // Update Firestore
+      await _firestore
+          .collection('vendors')
+          .doc(_auth.currentUser!.uid)
+          .update({'storeImage': imageUrl});
+
+      setState(() {
+        _storeImage = imageUrl;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Store image updated successfully')),
+      );
     } catch (e) {
       print('Error uploading image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error uploading image: $e')),
+        SnackBar(content: Text('Failed to update store image')),
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 

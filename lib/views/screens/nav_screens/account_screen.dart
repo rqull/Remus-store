@@ -51,7 +51,7 @@ class _AccountScreenState extends State<AccountScreen> {
           setState(() {
             _fullName = userData.data()?['fullname'];
             _email = userData.data()?['email'];
-            _profileImageUrl = userData.data()?['profilImage'];
+            _profileImageUrl = userData.data()?['profileImage'];
             _city = userData.data()?['city'];
             _locality = userData.data()?['locality'];
             _state = userData.data()?['state'];
@@ -69,68 +69,55 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _pickAndUploadImage() async {
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 500,
-        maxHeight: 500,
-        imageQuality: 75,
+        imageQuality: null, // Don't compress PNG images
       );
 
-      if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        final user = _auth.currentUser;
+      if (image == null) return;
 
-        if (user != null) {
-          // Upload to Supabase
-          final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-          final storageResponse =
-              await supabase.storage.from('photoProfile').upload(
-                    'profile_images/${user.uid}/$fileName',
-                    file,
-                    fileOptions: const FileOptions(
-                      cacheControl: '3600',
-                      upsert: false,
-                    ),
-                  );
+      // Check if image is PNG
+      bool isPNG = image.path.toLowerCase().endsWith('.png');
 
-          if (storageResponse.isEmpty) {
-            throw Exception('Failed to upload image');
-          }
+      // Create file reference
+      final file = File(image.path);
 
-          // Get public URL
-          final imageUrl = supabase.storage
-              .from('photoProfile')
-              .getPublicUrl('profile_images/${user.uid}/$fileName');
+      // Generate unique file name with correct extension
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final extension = isPNG ? '.png' : '.jpg';
+      final fileName = 'buyer_${_auth.currentUser!.uid}_$timestamp$extension';
 
-          // Update Firestore
-          await _firestore
-              .collection('buyers')
-              .doc(user.uid)
-              .update({'profilImage': imageUrl});
+      // Upload to Supabase
+      final response =
+          await supabase.storage.from('buyers').upload(fileName, file);
 
-          setState(() {
-            _profileImageUrl = imageUrl;
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Profile image updated successfully')),
-          );
-        }
+      if (response.isEmpty) {
+        throw Exception('Failed to upload image');
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile image: $e')),
-      );
-    } finally {
+
+      // Get the public URL
+      final imageUrl = supabase.storage.from('buyers').getPublicUrl(fileName);
+
+      // Update Firestore
+      await _firestore
+          .collection('buyers')
+          .doc(_auth.currentUser!.uid)
+          .update({'profileImage': imageUrl});
+
       setState(() {
-        _isLoading = false;
+        _profileImageUrl = imageUrl;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile image updated successfully')),
+      );
+    } catch (e) {
+      print('Error uploading image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile image')),
+      );
     }
   }
 
