@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mob3_uas_klp_04/controllers/auth_controller.dart';
-import 'package:mob3_uas_klp_04/views/screens/authentification_screens/login_screen.dart';
+
+import '../../../controllers/auth_controller.dart';
+import 'login_screen.dart';
+
 
 class RegisterScreen extends StatefulWidget {
   @override

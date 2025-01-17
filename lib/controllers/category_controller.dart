@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mob3_uas_klp_04/models/category_models.dart';
-
+import '../models/category_models.dart';
 class CategoryController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   RxList categories = <CategoryModel>[].obs;

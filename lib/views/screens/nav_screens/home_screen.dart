@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mob3_uas_klp_04/views/screens/nav_screens/widgets/banner_widget.dart';
-import 'package:mob3_uas_klp_04/views/screens/nav_screens/widgets/category_item.dart';
-import 'package:mob3_uas_klp_04/views/screens/nav_screens/widgets/home_header_widget.dart';
-import 'package:mob3_uas_klp_04/views/screens/nav_screens/widgets/recommended_product_widget.dart';
-import 'package:mob3_uas_klp_04/views/screens/nav_screens/widgets/reuseable_text_widget.dart';
+
+import 'widgets/banner_widget.dart';
+import 'widgets/category_item.dart';
+import 'widgets/home_header_widget.dart';
+import 'widgets/recommended_product_widget.dart';
+import 'widgets/reuseable_text_widget.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

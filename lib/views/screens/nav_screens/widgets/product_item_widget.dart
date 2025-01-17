@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:mob3_uas_klp_04/views/screens/inner_screens/product_detail_screen.dart';
+
+import '../../inner_screens/product_detail_screen.dart';
 
 class ProductItemWidget extends StatefulWidget {
   final dynamic productData;

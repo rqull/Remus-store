@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:mob3_uas_klp_04/controllers/category_controller.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../controllers/category_controller.dart';
 import '../../inner_screens/category_product_sceen.dart';
 
 class CategoryItem extends StatefulWidget {

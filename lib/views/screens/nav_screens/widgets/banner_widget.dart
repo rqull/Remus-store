@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:mob3_uas_klp_04/controllers/banner_controller.dart';
+
+import '../../../../controllers/banner_controller.dart';
+
 
 // Kelas BannerWidget adalah widget stateful yang menampilkan banner
 class BannerWidget extends StatefulWidget {

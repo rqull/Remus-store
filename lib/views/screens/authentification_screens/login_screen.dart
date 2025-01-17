@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mob3_uas_klp_04/controllers/auth_controller.dart';
-import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_screen.dart';
-import 'package:mob3_uas_klp_04/views/screens/main_screen.dart';
-import 'package:mob3_uas_klp_04/vendor/views/screens/main_vendor_screen.dart';
+import '../../../controllers/auth_controller.dart';
 import '../../../vendor/views/auth/vendor_register_screen.dart';
+import '../../../vendor/views/screens/main_vendor_screen.dart';
+import '../main_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

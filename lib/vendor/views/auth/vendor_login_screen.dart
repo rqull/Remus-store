@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mob3_uas_klp_04/views/screens/authentification_screens/register_screen.dart';
 
 import '../../../vendor/views/auth/vendor_register_screen.dart';
+import '../../../views/screens/authentification_screens/register_screen.dart';
 import '../../controller/vendor_auth_controller.dart';
 import '../screens/main_vendor_screen.dart';
 
